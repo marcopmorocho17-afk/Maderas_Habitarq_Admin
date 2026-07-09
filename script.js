@@ -1,4 +1,62 @@
-﻿// ==========================================
+// =========================================================================
+// ESCUDO PROACTIVO: BLOQUEO DE INTERFAZ Y CONGELAMIENTO DE CONSOLA NATAL
+// =========================================================================
+(function() {
+    // 1. Desactivar el clic derecho en toda la pantalla (Bloquea la opción "Inspeccionar")
+    document.addEventListener('contextmenu', function(evento) {
+        evento.preventDefault();
+    });
+
+    // 2. Interceptar y bloquear los atajos de teclado nativos de desarrollo
+    document.addEventListener('keydown', function(evento) {
+        // Bloquear tecla F12
+        if (evento.keyCode === 123) {
+            evento.preventDefault();
+            return false;
+        }
+        // Bloquear Ctrl + Shift + I (Abrir Inspector)
+        if (evento.ctrlKey && evento.shiftKey && evento.keyCode === 73) {
+            evento.preventDefault();
+            return false;
+        }
+        // Bloquear Ctrl + Shift + J (Abrir Consola de comandos)
+        if (evento.ctrlKey && evento.shiftKey && evento.keyCode === 74) {
+            evento.preventDefault();
+            return false;
+        }
+        // Bloquear Ctrl + U (Ver Código Fuente del documento HTML)
+        if (evento.ctrlKey && evento.keyCode === 85) {
+            evento.preventDefault();
+            return false;
+        }
+    });
+
+    // 3. Contramedida de bucle infinito (Debugger) para colapsar la pestaña si abren la consola
+    function activarTrampaConsola() {
+        function congelar() {
+            setInterval(function() {
+                debugger; // Provoca un punto de ruptura constante que traba el navegador del intruso
+            }, 20);
+        }
+        try {
+            // Truco de detección: Forzamos la evaluación de un objeto con propiedad Getter dinámica.
+            // Si las herramientas de desarrollo están abiertas, el navegador intentará renderizar el ID, activando la trampa.
+            var objetoDetector = new Image();
+            Object.defineProperty(objetoDetector, 'id', {
+                get: function() {
+                    congelar();
+                }
+            });
+            console.log(objetoDetector);
+        } catch (error) {}
+    }
+
+    // Ejecución cíclica constante en segundo plano cada segundo
+    setInterval(activarTrampaConsola, 1000);
+})();
+// =========================================================================
+
+// ==========================================
 // 1. CONFIGURACIÓN Y CONEXIÓN CON SUPABASE
 // ==========================================
 const ADMIN_PASSWORD = "Maderas2026";
