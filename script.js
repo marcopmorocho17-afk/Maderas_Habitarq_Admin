@@ -157,10 +157,9 @@ function seleccionarParaAgregarNuevaImagen(seccionId, nombreProducto) {
 // =========================================================================
 async function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
     seccionActiva = seccionId;
-    puestoActivo = null; // Anulamos puesto tradicional
+    puestoActivo = null; 
     esNuevaInsercionAcumulativa = false;
 
-    // Marcamos visualmente las tarjetas antiguas de tu panel
     document.querySelectorAll('.item-variante').forEach(function(el) {
         el.style.border = "";
         el.style.background = "";
@@ -171,10 +170,8 @@ async function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
         event.currentTarget.style.setProperty('background', '#fee2e2', 'important');
     }
 
-    // A. CAPTURA O CREACIÓN EN CALIENTE DEL MENÚ DESPLEGABLE EN EL FORMULARIO
     let selectBorrar = document.getElementById('selectBorrarImagenExtra');
     if (!selectBorrar) {
-        // Buscamos el contenedor de características para colgarle el menú de selección individual
         const bloqueTexto = document.getElementById('bloqueSubVariantesFijas');
         if (bloqueTexto) {
             const contenedorSelect = document.createElement('div');
@@ -189,14 +186,12 @@ async function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
         }
     }
 
-    // Encendemos el cuadro si estaba oculto por una operación previa
     const contenedorPadreSelect = document.getElementById('contenedorSelectBorrarDinamico');
     if (contenedorPadreSelect) contenedorPadreSelect.style.display = "block";
 
     if (selectBorrar) {
         selectBorrar.innerHTML = '<option value="">⏳ Cargando catálogo de internet...</option>';
         try {
-            // Descargamos las maderas acumuladas creadas con el botón (+) en esta sección
             const urlFetch = SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=id,nombre_sub_variante&seccion_id=eq.' + encodeURIComponent(seccionActiva) + '&orden=like.Puesto_Extra_*';
             const respuesta = await fetch(urlFetch, { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } });
             const fotos = await respuesta.json();
@@ -213,7 +208,6 @@ async function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
         } catch (err) { console.error(err); }
     }
 
-    // B. RECONFIGURACIÓN DEL BOTÓN DE ACCIÓN PRINCIPAL DEL FORMULARIO
     const btn = document.getElementById('btnSubir');
     if (btn) {
         btn.disabled = false;
@@ -221,12 +215,13 @@ async function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
         btn.style.backgroundColor = "#ef4444";
         btn.style.cursor = "pointer";
         
-        // Sobreescribimos el clic para que borre únicamente el registro seleccionado del menú
+        // MENSAJE CORREGIDO INDIVIDUAL: Borra estrictamente el ID seleccionado en la lista desplegable
         btn.onclick = async function() {
             const idParaBorrar = document.getElementById('selectBorrarImagenExtra') ? document.getElementById('selectBorrarImagenExtra').value : null;
             if (!idParaBorrar) return alert("Por favor, selecciona primero una imagen de la lista desplegable.");
 
-            if (!confirm("¿Estás seguro de eliminar permanentemente esta imagen del catálogo de tus usuarios?")) return;
+            // MENSAJE DE REGLA INDIVIDUAL ASIGNADO
+            if (!confirm("¿Estás seguro de eliminar permanentemente SOLO la imagen seleccionada de tu catálogo?")) return;
 
             try {
                 const urlDelete = SUPABASE_URL + '/rest/v1/catalogo_imagenes?id=eq.' + idParaBorrar;
@@ -239,21 +234,21 @@ async function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
 
                 alert("¡Éxito! La imagen seleccionada ha sido borrada permanentemente.");
                 
-                // Ocultamos la lista y restauramos el botón a su estado nativo original de subida
                 if (contenedorPadreSelect) contenedorPadreSelect.style.display = "none";
                 btn.textContent = "Actualizar Imagen Web";
                 btn.style.backgroundColor = "#94a3b8";
                 btn.disabled = true;
-                btn.onclick = subirImagenPuesto; // Devolvemos la función original de subida
+                btn.onclick = subirImagenPuesto; 
                 
                 const indicador = document.getElementById('indicadorSeleccion');
                 if (indicador) indicador.innerHTML = "Selecciona una posición en el catálogo para empezar.";
                 
-                descargarYRenderizarImagenes(); // Refresca tu pantalla del admin
+                descargarYRenderizarImagenes(); 
             } catch (err) { alert("No se pudo eliminar: " + err.message); }
         };
     }
 }
+window.seleccionarParaBorrarImagenesExtra = seleccionarParaBorrarImagenesExtra;
 // =========================================================================
 // 4. SUBIDA POR COORDENADAS CON NOMBRE PLANO ACUMULATIVO (INSERCION PURA - CORREGIDA)
 // =========================================================================
