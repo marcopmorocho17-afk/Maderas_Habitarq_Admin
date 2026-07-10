@@ -229,17 +229,28 @@ async function subirImagenPuesto() {
     }
 }
 // =========================================================================
-// 5. RENDERIZADO DESDE LA API REST DE SUPABASE (CATÁLOGO FIJO S1-S12)
+// 5. RENDERIZADO CON BOTÓN DE ELIMINACIÓN FLOTANTE (CATÁLOGO FIJO S1-S12)
 // =========================================================================
 async function descargarYRenderizarImagenes() {
     try {
-        const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=seccion_id,orden,ruta_imagen', {
+        const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=id,seccion_id,orden,ruta_imagen,nombre_sub_variante', {
             headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
         });
         const imagenesDB = await respuestaFetch.json();
 
+        // 1. Limpiamos todas las imágenes de los puestos fijos en el HTML antes de re-pintar
+        document.querySelectorAll('.item-variante img').forEach(img => {
+            img.src = ""; // Resetea la miniatura visual
+        });
+        document.querySelectorAll('.item-variante span').forEach(span => {
+            span.textContent = ""; // Limpia el nombre anterior
+        });
+        // Removemos botones de eliminar viejos para no duplicarlos
+        document.querySelectorAll('.btn-eliminar-foto-fija').forEach(btn => btn.remove());
+
         if (imagenesDB && Array.isArray(imagenesDB)) {
             imagenesDB.forEach(function(item) {
+                // Buscamos si es un puesto tradicional fijo (1 al 40)
                 let bloquePrefijo = "S1"; 
                 if (item.seccion_id === "Seccion2") bloquePrefijo = "S2";
                 if (item.seccion_id === "Seccion3") bloquePrefijo = "S3";
@@ -253,18 +264,72 @@ async function descargarYRenderizarImagenes() {
                 if (item.seccion_id === "Seccion11") bloquePrefijo = "S11";
                 if (item.seccion_id === "Seccion12") bloquePrefijo = "S12";
 
+                // Buscamos el contenedor HTML nativo de este puesto usando su id de imagen original
                 const elementoImg = document.getElementById("img-" + bloquePrefijo + "-P" + item.orden);
+                
                 if (elementoImg) {
-                    // BLINDAJE ANTI-CACHÉ: Forzamos la actualización inmediata añadiendo la marca de tiempo
+                    // Ponemos la foto con marca de tiempo contra la caché de Edge
                     elementoImg.src = item.ruta_imagen + "?t=" + Date.now();
+                    
+                    // Si tiene un nombre plano asignado, lo pintamos en su respectivo span nativo
+                    const elementoTexto = elementoImg.nextElementSibling;
+                    if (elementoTexto && elementoTexto.tagName === "SPAN" && item.nombre_sub_variante) {
+                        elementoTexto.textContent = item.nombre_sub_variante;
+                    }
+
+                    // INYECCIÓN DEL BOTÓN ❌: Buscamos la caja padre (.item-variante) para colgarle el botón flotante
+                    const cajaPadre = elementoImg.parentElement;
+                    if (cajaPadre) {
+                        cajaPadre.style.position = "relative"; // Asegura que el botón flote de forma exacta
+
+                        const botonEliminar = document.createElement('button');
+                        botonEliminar.className = 'btn-eliminar-foto-fija';
+                        botonEliminar.innerHTML = "❌";
+                        botonEliminar.style.cssText = "position: absolute; top: 4px; right: 4px; background: #dc2626; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10; transition: transform 0.1s;";
+                        
+                        // Detiene el clic para que no se confunda con la selección de editar
+                        botonEliminar.onclick = function(evento) {
+                            evento.stopPropagation();
+                            eliminarFotoTradicionalPorId(item.id);
+                        };
+
+                        cajaPadre.appendChild(botonEliminar);
+                    }
                 }
             });
-            console.log("¡Las 12 secciones del catálogo administrativo se renderizaron con éxito!");
+            console.log("¡Las imágenes fijas y sus botones de eliminación se cargaron con éxito!");
         }
     } catch (err) {
-        console.error("Error cargando imágenes:", err);
+        console.error("Error cargando imágenes de control:", err);
     }
 }
+
+// NUEVA FUNCIÓN INTERNA: Borra el registro directamente de Supabase
+async function eliminarFotoTradicionalPorId(idRegistro) {
+    if (!confirm("¿Estás seguro de que deseas eliminar esta imagen de la web? Esta acción no se puede deshacer.")) {
+        return;
+    }
+
+    try {
+        const urlDelete = SUPABASE_URL + '/rest/v1/catalogo_imagenes?id=eq.' + idRegistro;
+        const respuesta = await fetch(urlDelete, {
+            method: 'DELETE',
+            headers: { 
+                'apikey': SUPABASE_ANON_KEY, 
+                'Authorization': 'Bearer ' + SUPABASE_ANON_KEY 
+            }
+        });
+
+        if (!respuesta.ok) throw new Error("El servidor rechazó la solicitud de borrado.");
+
+        alert("¡Éxito! La imagen ha sido removida permanentemente del catálogo.");
+        descargarYRenderizarImagenes(); // Recarga las miniaturas en caliente
+    } catch(err) {
+        console.error("Error al borrar foto:", err);
+        alert("No se pudo eliminar: " + err.message);
+    }
+}
+
 
 // =========================================================================
 // 6. CONTROL INTERACTIVO DE MÚLTIPLES DESPLEGABLES (DINÁMICO)
