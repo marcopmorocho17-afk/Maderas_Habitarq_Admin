@@ -301,7 +301,7 @@
                 </div>
             </div>
         </div>
-        <!-- SECCIÓN 3: CORNISAS -->
+               <!-- SECCIÓN 3: CORNISAS -->
         <div class="bloque-categoria" style="margin-top: 30px;">
             <button onclick="toggleSeccion('desplegableCornisas')" class="btn-desplegable">
                 Cornisas ▾
@@ -315,28 +315,41 @@
                         </div>
                         <div class="variante-oculta">
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion3', 1, 'Cornisa Modelo 1')">
-                                <img id="img-S3-P1" src="otros/CR1.png" alt="Cornisas 1" /><span>Cornisa Modelo
-                                    1</span>
+                                <img id="img-S3-P1" src="otros/CR1.png" alt="Cornisas 1" /><span>Cornisa Modelo 1</span>
                             </div>
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion3', 2, 'Cornisa Modelo 2')">
-                                <img id="img-S3-P2" src="otros/CR2.png" alt="Cornisas 2" /><span>Cornisa Modelo
-                                    2</span>
+                                <img id="img-S3-P2" src="otros/CR2.png" alt="Cornisas 2" /><span>Cornisa Modelo 2</span>
                             </div>
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion3', 3, 'Cornisa Modelo 3')">
-                                <img id="img-S3-P3" src="otros/CR4.png" alt="Cornisas 3" /><span>Cornisa Modelo
-                                    3</span>
+                                <img id="img-S3-P3" src="otros/CR4.png" alt="Cornisas 3" /><span>Cornisa Modelo 3</span>
                             </div>
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion3', 4, 'Cornisa Modelo 4')">
-                                <img id="img-S3-P4" src="otros/CR3.png" alt="Cornisas 4" /><span>Cornisa Modelo
-                                    4</span>
+                                <img id="img-S3-P4" src="otros/CR3.png" alt="Cornisas 4" /><span>Cornisa Modelo 4</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ EXCLUSIVO CORNISAS
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion3', 'Cornisas')" 
+                                 style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 NUEVO CUADRO INTERACTIVO AISLADO: COMANDO ❌ EXCLUSIVO CORNISAS
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaBorrarImagenesExtra('Seccion3', 'Cornisas')" 
+                                 style="border: 2px dashed #f87171 !important; background: #fef2f2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #ef4444; font-weight: bold; line-height: 1;">❌</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Borrar Extras</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- SECCIÓN 4: LACADO DE MADERA -->
+               <!-- SECCIÓN 4: LACADO DE MADERA -->
         <div class="bloque-categoria" style="margin-top: 30px;">
             <button onclick="toggleSeccion('desplegableLacado')" class="btn-desplegable">
                 Lacado de Madera ▾
@@ -352,28 +365,39 @@
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion4', 1, 'Acabado Mate')">
                                 <img id="img-S4-P1" src="otros/L1.png" alt="Locado 1" /><span>Acabado Mate</span>
                             </div>
-                            <div class="item-variante"
-                                onclick="seleccionarPosicion('Seccion4', 2, 'Acabado Semibrillante')">
-                                <img id="img-S4-P2" src="otros/L2.png" alt="Locado 2" /><span>Acabado
-                                    Semibrillante</span>
+                            <div class="item-variante" onclick="seleccionarPosicion('Seccion4', 2, 'Acabado Semibrillante')">
+                                <img id="img-S4-P2" src="otros/L2.png" alt="Locado 2" /><span>Acabado Semibrillante</span>
                             </div>
-                            <div class="item-variante"
-                                onclick="seleccionarPosicion('Seccion4', 3, 'Acabado Brillante')">
-                                <img id="img-S4-P3" src="otros/L3.png" alt="Locado 3" /><span>Acabado
-                                    Brillante</span>
+                            <div class="item-variante" onclick="seleccionarPosicion('Seccion4', 3, 'Acabado Brillante')">
+                                <img id="img-S4-P3" src="otros/L3.png" alt="Locado 3" /><span>Acabado Brillante</span>
                             </div>
-                            <div class="item-variante"
-                                onclick="seleccionarPosicion('Seccion4', 4, 'Protección Alta Gama')">
-                                <img id="img-S4-P4" src="otros/L4.png" alt="Locado 4" /><span>Protección Alta
-                                    Gama</span>
+                            <div class="item-variante" onclick="seleccionarPosicion('Seccion4', 4, 'Protección Alta Gama')">
+                                <img id="img-S4-P4" src="otros/L4.png" alt="Locado 4" /><span>Protección Alta Gama</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ EXCLUSIVO LACADO
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion4', 'Lacado de Madera')" 
+                                 style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 NUEVO CUADRO INTERACTIVO AISLADO: COMANDO ❌ EXCLUSIVO LACADO
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaBorrarImagenesExtra('Seccion4', 'Lacado de Madera')" 
+                                 style="border: 2px dashed #f87171 !important; background: #fef2f2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #ef4444; font-weight: bold; line-height: 1;">❌</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Borrar Extras</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- SECCIÓN 5: MANGÓN PARA PASAMANOS -->
+               <!-- SECCIÓN 5: MANGÓN PARA PASAMANOS -->
         <div class="bloque-categoria" style="margin-top: 30px;">
             <button onclick="toggleSeccion('desplegableMangon')" class="btn-desplegable">
                 Mangón para pasamanos ▾
@@ -393,13 +417,30 @@
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion5', 2, 'Mangon 2')">
                                 <img id="img-S5-P2" src="otros/M1.png" alt="Mangon" /><span>Mangon 2</span>
                             </div>
+
+                            <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ EXCLUSIVO MANGÓN
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion5', 'Mangón para pasamanos')" 
+                                 style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 NUEVO CUADRO INTERACTIVO AISLADO: COMANDO ❌ EXCLUSIVO MANGÓN
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaBorrarImagenesExtra('Seccion5', 'Mangón para pasamanos')" 
+                                 style="border: 2px dashed #f87171 !important; background: #fef2f2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #ef4444; font-weight: bold; line-height: 1;">❌</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Borrar Extras</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- SECCIÓN 6: BOLILLOS -->
+              <!-- SECCIÓN 6: BOLILLOS -->
         <div class="bloque-categoria" style="margin-top: 30px;">
             <button onclick="toggleSeccion('desplegableBolillos')" class="btn-desplegable">
                 Bolillos ▾
@@ -413,16 +454,32 @@
                         </div>
                         <div class="variante-oculta">
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion6', 1, 'Bolillo Estándar')">
-                                <img id="img-S6-P1" src="otros/bolillos.png" alt="Bolillos" /><span>Bolillo
-                                    Estándar</span>
+                                <img id="img-S6-P1" src="otros/bolillos.png" alt="Bolillos" /><span>Bolillo Estándar</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ EXCLUSIVO BOLILLOS
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion6', 'Bolillos')" 
+                                 style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 NUEVO CUADRO INTERACTIVO AISLADO: COMANDO ❌ EXCLUSIVO BOLILLOS
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaBorrarImagenesExtra('Seccion6', 'Bolillos')" 
+                                 style="border: 2px dashed #f87171 !important; background: #fef2f2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #ef4444; font-weight: bold; line-height: 1;">❌</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Borrar Extras</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- SECCIÓN 7: TARUGOS -->
+               <!-- SECCIÓN 7: TARUGOS -->
         <div class="bloque-categoria" style="margin-top: 30px;">
             <button onclick="toggleSeccion('desplegableTarugos')" class="btn-desplegable">
                 Tarugos ▾
@@ -436,16 +493,32 @@
                         </div>
                         <div class="variante-oculta">
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion7', 1, 'Tarugo Estándar')">
-                                <img id="img-S7-P1" src="otros/tarugo.png" alt="Tarugo" /><span>Tarugo
-                                    Estándar</span>
+                                <img id="img-S7-P1" src="otros/tarugo.png" alt="Tarugo" /><span>Tarugo Estándar</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ EXCLUSIVO TARUGOS
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion7', 'Tarugos')" 
+                                 style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 NUEVO CUADRO INTERACTIVO AISLADO: COMANDO ❌ EXCLUSIVO TARUGOS
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaBorrarImagenesExtra('Seccion7', 'Tarugos')" 
+                                 style="border: 2px dashed #f87171 !important; background: #fef2f2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #ef4444; font-weight: bold; line-height: 1;">❌</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Borrar Extras</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- SECCIÓN 8: VIGAS AVINO -->
+              <!-- SECCIÓN 8: VIGAS AVINO -->
         <div class="bloque-categoria" style="margin-top: 30px;">
             <button onclick="toggleSeccion('desplegableVigas')" class="btn-desplegable">
                 Vigas Avino ▾
@@ -460,16 +533,32 @@
                         <div class="variante-oculta">
                             <div class="item-variante"
                                 onclick="seleccionarPosicion('Seccion8', 1, 'Viga Avino Estándar')">
-                                <img id="img-S8-P1" src="otros/Viga.png" alt="Vigas avino" /><span>Viga Avino
-                                    Estándar</span>
+                                <img id="img-S8-P1" src="otros/Viga.png" alt="Vigas avino" /><span>Viga Avino Estándar</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ EXCLUSIVO VIGAS AVINO
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion8', 'Vigas Avino')" 
+                                 style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 NUEVO CUADRO INTERACTIVO AISLADO: COMANDO ❌ EXCLUSIVO VIGAS AVINO
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaBorrarImagenesExtra('Seccion8', 'Vigas Avino')" 
+                                 style="border: 2px dashed #f87171 !important; background: #fef2f2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #ef4444; font-weight: bold; line-height: 1;">❌</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Borrar Extras</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- SECCIÓN 9: MADERA DE LAUREL -->
+                <!-- SECCIÓN 9: MADERA DE LAUREL -->
         <div class="bloque-categoria" style="margin-top: 30px;">
             <button onclick="toggleSeccion('desplegableLaurel')" class="btn-desplegable">
                 Madera de Laurel ▾
@@ -485,13 +574,30 @@
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion9', 1, 'Muestra Laurel')">
                                 <img id="img-S9-P1" src="otros/laurel.png" alt="Laurel" /><span>Muestra Laurel</span>
                             </div>
+
+                            <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ EXCLUSIVO MADERA DE LAUREL
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion9', 'Madera de Laurel')" 
+                                 style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 NUEVO CUADRO INTERACTIVO AISLADO: COMANDO ❌ EXCLUSIVO MADERA DE LAUREL
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaBorrarImagenesExtra('Seccion9', 'Madera de Laurel')" 
+                                 style="border: 2px dashed #f87171 !important; background: #fef2f2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #ef4444; font-weight: bold; line-height: 1;">❌</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Borrar Extras</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- SECCIÓN 10: MADERA DE PINO -->
+                <!-- SECCIÓN 10: MADERA DE PINO -->
         <div class="bloque-categoria" style="margin-top: 30px;">
             <button onclick="toggleSeccion('desplegablePino')" class="btn-desplegable">
                 Madera de Pino ▾
@@ -507,13 +613,31 @@
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion10', 1, 'Muestra Pino')">
                                 <img id="img-S10-P1" src="otros/Pino.png" alt="Pino" /><span>Muestra Pino</span>
                             </div>
+
+                            <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ EXCLUSIVO MADERA DE PINO
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion10', 'Madera de Pino')" 
+                                 style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 NUEVO CUADRO INTERACTIVO AISLADO: COMANDO ❌ EXCLUSIVO MADERA DE PINO
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaBorrarImagenesExtra('Seccion10', 'Madera de Pino')" 
+                                 style="border: 2px dashed #f87171 !important; background: #fef2f2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #ef4444; font-weight: bold; line-height: 1;">❌</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Borrar Extras</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SECCIÓN 11: MADERA DE SEIQUE -->
+                <!-- SECCIÓN 11: MADERA DE SEIQUE -->
         <div class="bloque-categoria" style="margin-top: 30px;">
             <button onclick="toggleSeccion('desplegableSeique')" class="btn-desplegable">
                 Madera de Seique ▾
@@ -527,8 +651,25 @@
                         </div>
                         <div class="variante-oculta">
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion11', 1, 'Muestra Seique')">
-                                <img id="img-S11-P1" src="otros/Seique.png" alt="Seique" /><span>Muestra
-                                    Seique</span>
+                                <img id="img-S11-P1" src="otros/Seique.png" alt="Seique" /><span>Muestra Seique</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ EXCLUSIVO MADERA DE SEIQUE
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion11', 'Madera de Seique')" 
+                                 style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 NUEVO CUADRO INTERACTIVO AISLADO: COMANDO ❌ EXCLUSIVO MADERA DE SEIQUE
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaBorrarImagenesExtra('Seccion11', 'Madera de Seique')" 
+                                 style="border: 2px dashed #f87171 !important; background: #fef2f2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #ef4444; font-weight: bold; line-height: 1;">❌</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Borrar Extras</span>
                             </div>
                         </div>
                     </div>
@@ -536,7 +677,8 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 12: MADERA DE CANELO -->
+
+              <!-- SECCIÓN 12: MADERA DE CANELO -->
         <div class="bloque-categoria" style="margin-top: 30px;">
             <button onclick="toggleSeccion('desplegableCanelo')" class="btn-desplegable">
                 Madera de Canelo ▾
@@ -550,15 +692,31 @@
                         </div>
                         <div class="variante-oculta">
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion12', 1, 'Muestra Canelo')">
-                                <img id="img-S12-P1" src="otros/Canelo.png" alt="Canelo" /><span>Muestra
-                                    Canelo</span>
+                                <img id="img-S12-P1" src="otros/Canelo.png" alt="Canelo" /><span>Muestra Canelo</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ EXCLUSIVO MADERA DE CANELO
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion12', 'Madera de Canelo')" 
+                                 style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 NUEVO CUADRO INTERACTIVO AISLADO: COMANDO ❌ EXCLUSIVO MADERA DE CANELO
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaBorrarImagenesExtra('Seccion12', 'Madera de Canelo')" 
+                                 style="border: 2px dashed #f87171 !important; background: #fef2f2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #ef4444; font-weight: bold; line-height: 1;">❌</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Borrar Extras</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
         <hr style="margin-bottom: 50px; border: 0;">
     </main>
     </div>
