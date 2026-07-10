@@ -208,7 +208,7 @@ function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
 }
 
 // =========================================================================
-// 4. SUBIDA POR COORDENADAS CON NOMBRE PLANO ACUMULATIVO (REPARADO DEFINITIVO)
+// 4. SUBIDA POR COORDENADAS CON NOMBRE PLANO ACUMULATIVO (INSERCION PURA - CORREGIDA)
 // =========================================================================
 async function subirImagenPuesto() {
     const fileInput = document.getElementById('nuevaImagen');
@@ -219,7 +219,7 @@ async function subirImagenPuesto() {
 
     const nombreVariante = txtNombre ? txtNombre.value.trim() : "";
     
-    // REPARACIÓN MAESTRA ANTI-NORMALIZE: Captura estrictamente la primera posición del array de archivos
+    // REPARACIÓN INMUTABLE: Captura estrictamente el primer archivo físico con su índice cero
     const file = fileInput.files[0]; 
     const path = "posiciones/sub_variantes/" + Date.now() + "_" + file.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
     
@@ -230,7 +230,7 @@ async function subirImagenPuesto() {
         
         const { data: urlData } = supabaseClient.storage.from('catalogos').getPublicUrl(path);
         
-        // B. INSERCIÓN O ACTUALIZACIÓN DUAL SEGÚN EL BOTÓN PULSADO
+        // B. INSERCIÓN PURA COMPATIBLE
         if (esNuevaInsercionAcumulativa) {
             await supabaseClient.from('catalogo_imagenes').insert([{
                 seccion_id: seccionActiva,
@@ -257,17 +257,11 @@ async function subirImagenPuesto() {
             alert("¡Éxito! Imagen del catálogo tradicional modificada en vivo.");
         }
         
-        // Limpieza automática inmediata del formulario
         fileInput.value = "";
         if (txtNombre) txtNombre.value = "";
-        descargarYRenderizarImagenes(); // Gatilla el renderizado elástico mixto
-        
-    } catch(e) { 
-        console.error(e);
-        alert("Error al procesar subida: " + e.message); 
-    }
+        descargarYRenderizarImagenes(); 
+    } catch(e) { alert("Error al procesar subida: " + e.message); }
 }
-
 // =========================================================================
 // 5. RENDERIZADO MIXTO INTELIGENTE COMPATIBLE CON PUESTOS FIJOS Y BOTÓN ➕
 // =========================================================================
