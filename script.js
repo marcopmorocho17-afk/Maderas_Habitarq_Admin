@@ -146,6 +146,78 @@ function seleccionarParaAgregarNuevaImagen(seccionId, nombreProducto) {
         btn.style.cursor = "pointer";
     }
 }
+// Variable de control interno para el modo borrado masivo de extras
+let modoBorradoDeExtrasActivado = false;
+
+function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
+    seccionActiva = seccionId;
+    puestoActivo = null; // Anulamos puesto tradicional fijado
+    modoBorradoDeExtrasActivado = true;
+
+    // Quitamos cualquier borde verde o gris de los otros cuadraditos antiguos
+    document.querySelectorAll('.item-variante').forEach(function(el) {
+        el.style.border = "";
+        el.style.background = "";
+    });
+
+    // Marcamos visualmente el cuadro de la equis (❌) que acabas de presionar con un borde rojo vivo
+    if (event && event.currentTarget) {
+        event.currentTarget.style.setProperty('border', '2px solid #ef4444', 'important');
+        event.currentTarget.style.setProperty('background', '#fee2e2', 'important');
+    }
+
+    // Actualizamos el letrero del panel administrativo
+    const indicador = document.getElementById('indicadorSeleccion');
+    if (indicador) {
+        indicador.innerHTML = "🚨 Modo Purga: Listo para vaciar las fotos extras acumuladas de: <strong>" + nombreProducto + "</strong>";
+    }
+
+    // Cambiamos temporalmente el color del botón principal a rojo de advertencia
+    const btn = document.getElementById('btnSubir');
+    if (btn) {
+        btn.disabled = false;
+        btn.textContent = "🔥 Confirmar y Eliminar Fotos Extras";
+        btn.style.backgroundColor = "#dc2626";
+        btn.style.cursor = "pointer";
+        
+        // Reescribimos el onclick en caliente para que ejecute el borrado directo de internet
+        btn.onclick = async function() {
+            if (!confirm("¿Estás seguro de eliminar permanentemente todas las imágenes extras agregadas con el botón ➕ para este producto? El catálogo fijo quedará intacto.")) {
+                return;
+            }
+            
+            try {
+                // Comando REST directo de purga masiva filtrado por ID de sección y puestos elásticos
+                const urlDelete = SUPABASE_URL + '/rest/v1/catalogo_imagenes?seccion_id=eq.' + encodeURIComponent(seccionActiva) + '&orden=like.Puesto_Extra_*';
+                const respuesta = await fetch(urlDelete, {
+                    method: 'DELETE',
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+                });
+
+                if (!respuesta.ok) throw new Error("La base de datos rechazó la solicitud de vaciado.");
+
+                alert("¡Éxito! La galería de fotos extras ha sido limpiada en el servidor.");
+                
+                // Restauramos el botón a su estado nativo original
+                btn.textContent = "Actualizar Imagen Web";
+                btn.style.backgroundColor = "#94a3b8";
+                btn.disabled = true;
+                if (indicador) indicador.innerHTML = "Selecciona una posición en el catálogo para empezar.";
+                
+                // Devolvemos el onclick original de tu Función 4 intacta
+                btn.onclick = subirImagenPuesto;
+                modoBorradoDeExtrasActivado = false;
+                
+                descargarYRenderizarImagenes(); // Refresca tu panel en caliente
+                
+            } catch(err) {
+                alert("No se pudo vaciar la galería: " + err.message);
+            }
+        };
+    }
+}
+// Vinculación explícita global para el árbol window al fondo de tu script
+window.seleccionarParaBorrarImagenesExtra = seleccionarParaBorrarImagenesExtra;
 // =========================================================================
 // 4. SUBIDA POR COORDENADAS: MOTOR INTELIGENTE DUAL (CORREGIDO PARA TU ESQUEMA)
 // =========================================================================
