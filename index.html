@@ -37,25 +37,20 @@
                         📌 Selecciona una foto del catálogo haciendo clic sobre ella.
                     </div>
 
-                                                       <div class="grupo">
+                                                                          <div class="grupo">
                         <label for="nuevaImagen">Selecciona la nueva Imagen:</label>
                         <input type="file" id="nuevaImagen" accept="image/*">
                     </div>
 
                     <!-- =========================================================================
-                         GESTOR DE SUB-VARIANTES ILIMITADAS PARA EL CATÁLOGO TRADICIONAL
+                         GESTOR ACUMULATIVO SIN LÍMITES PARA EL CATÁLOGO TRADICIONAL
                          ========================================================================= -->
                     <div id="bloqueSubVariantesFijas" style="margin: 15px 0; padding: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; text-align: left;">
-                        <strong style="font-size: 13px; color: #1e293b; display: block; margin-bottom: 8px; text-align: center;">🎨 Agregar Características a esta Variante</strong>
+                        <strong style="font-size: 13px; color: #1e293b; display: block; margin-bottom: 8px; text-align: center;">🎨 Identificador de la Variante</strong>
                         
                         <div style="margin-bottom: 8px;">
-                            <label style="font-size: 11px; font-weight: bold; color: #475569; display: block; margin-bottom: 2px;">Nombre de la Sub-Variante (Ej: Bolillo Delgado):</label>
-                            <input type="text" id="subVarianteNombre" placeholder="Escribe el tipo o nombre" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 12px; font-family: inherit;">
-                        </div>
-
-                        <div style="margin-bottom: 8px;">
-                            <label style="font-size: 11px; font-weight: bold; color: #475569; display: block; margin-bottom: 2px;">Especificaciones / Medidas Técnicas:</label>
-                            <textarea id="subVarianteDetalle" placeholder="📐Medidas: GROSOR X CM..." rows="2" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 12px; font-family: inherit; resize: vertical;"></textarea>
+                            <label style="font-size: 11px; font-weight: bold; color: #475569; display: block; margin-bottom: 2px;">Escribe el nombre de la madera o sub-tipo:</label>
+                            <input type="text" id="subVarianteNombre" placeholder="Escribe el nombre (Ej: Rastrera de 6cm)" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 12px; font-family: inherit;">
                         </div>
                     </div>
 
@@ -64,6 +59,7 @@
 
                     <!-- SECCIÓN CONTROLADORA DEL CATÁLOGO PDF -->
                     <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 25px 0;">
+
 
 
                     <div class="grupo">
