@@ -229,36 +229,16 @@ async function subirImagenPuesto() {
     }
 }
 // =========================================================================
-// 5. RENDERIZADO INTELIGENTE ANTI-IMÁGENES ROTAS Y RECONSTRUCCIÓN DEL BOTÓN ➕
+// 5. RENDERIZADO DESDE LA API REST DE SUPABASE (CATÁLOGO FIJO ORIGINAL)
 // =========================================================================
 async function descargarYRenderizarImagenes() {
     try {
-        const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=id,seccion_id,orden,ruta_imagen,nombre_sub_variante', {
+        const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=seccion_id,orden,ruta_imagen', {
             headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
         });
         const imagenesDB = await respuestaFetch.json();
 
-        // 1. BLINDAJE ABSOLUTO ANTI-ROTURAS: Limpiamos los contenedores visuales viejos
-        // Si la base de datos está vacía, ocultamos temporalmente el cuadro de imagen rota de Edge
-        document.querySelectorAll('.item-variante img').forEach(img => {
-            img.style.display = "none"; // Esconde el recuadro roto feo de la pantalla
-            img.src = ""; 
-        });
-        
-        // Removemos botones de eliminar anteriores para evitar duplicados en la cuadrícula
-        document.querySelectorAll('.btn-eliminar-foto-fija').forEach(btn => btn.remove());
-
-        // 2. RECONSTRUCCIÓN AUTOMÁTICA DEL BOTÓN ➕
-        const botonMasElemento = document.querySelector('.item-variante-mas, [onclick*="seleccionarParaAgregarNuevaImagen"]');
-        if (botonMasElemento) {
-            botonMasElemento.innerHTML = `
-                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
-                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase; display: block;">Añadir Foto</span>
-            `;
-        }
-
-        // 3. SECCIÓN DE INYECCIÓN DESDE LA NUBE (SUPABASE)
-        if (imagenesDB && Array.isArray(imagenesDB) && imagenesDB.length > 0) {
+        if (imagenesDB && Array.isArray(imagenesDB)) {
             imagenesDB.forEach(function(item) {
                 let bloquePrefijo = "S1"; 
                 if (item.seccion_id === "Seccion2") bloquePrefijo = "S2";
@@ -273,42 +253,16 @@ async function descargarYRenderizarImagenes() {
                 if (item.seccion_id === "Seccion11") bloquePrefijo = "S11";
                 if (item.seccion_id === "Seccion12") bloquePrefijo = "S12";
 
-                // Buscamos el nodo de imagen correspondiente en tu HTML
                 const elementoImg = document.getElementById("img-" + bloquePrefijo + "-P" + item.orden);
-                
                 if (elementoImg) {
-                    elementoImg.style.display = "block"; // Encendemos la imagen porque ya tiene datos de internet
-                    elementoImg.src = item.ruta_imagen + "?t=" + Date.now(); // Parámetro anti-caché
-                    
-                    // Sincronizamos el nombre plano en su respectivo span de abajo si existe
-                    const elementoTexto = elementoImg.nextElementSibling;
-                    if (elementoTexto && elementoTexto.tagName === "SPAN" && item.nombre_sub_variante) {
-                        elementoTexto.textContent = item.nombre_sub_variante;
-                    }
-
-                    // INYECCIÓN DE LA ❌ FLOTANTE DE ELIMINACIÓN REAL
-                    const cajaPadre = elementoImg.parentElement;
-                    if (cajaPadre) {
-                        cajaPadre.style.position = "relative";
-
-                        const botonEliminar = document.createElement('button');
-                        botonEliminar.className = 'btn-eliminar-foto-fija';
-                        botonEliminar.innerHTML = "❌";
-                        botonEliminar.style.cssText = "position: absolute; top: 4px; right: 4px; background: #dc2626; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;";
-                        
-                        botonEliminar.onclick = function(evento) {
-                            evento.stopPropagation(); // Detiene el clic para que no se confunda con la selección de la tarjeta
-                            eliminarFotoTradicionalPorId(item.id);
-                        };
-
-                        cajaPadre.appendChild(botonEliminar);
-                    }
+                    // Parámetro dinámico anti-caché nativo original
+                    elementoImg.src = item.ruta_imagen + "?t=" + Date.now();
                 }
             });
+            console.log("¡Las 12 secciones del catálogo administrativo se renderizaron con éxito!");
         }
-        console.log("¡Catálogo administrativo renderizado de forma segura y simétrica!");
     } catch (err) {
-        console.error("Error cargando imágenes de control:", err);
+        console.error("Error cargando imágenes:", err);
     }
 }
 
