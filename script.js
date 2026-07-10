@@ -110,21 +110,24 @@ function seleccionarPosicion(seccionId, puesto, nombreProducto) {
 }
 
 // =========================================================================
-// 4. SUBIDA POR COORDENADAS DE SELECCIÓN POR CLIC (CATÁLOGO FIJO)
+// 4. SUBIDA POR COORDENADAS DE SELECCIÓN POR CLIC (CATÁLOGO FIJO - REPARADA)
 // =========================================================================
 async function subirImagenPuesto() {
     const fileInput = document.getElementById('nuevaImagen');
     if (!fileInput || !fileInput.files.length) return alert("Selecciona una imagen antes de continuar.");
     
-    const file = fileInput.files; 
+    // CORRECCIÓN CLAVE: Agregamos [0] para capturar estrictamente el archivo físico individual seleccionado
+    const file = fileInput.files[0]; 
     const path = "posiciones/" + Date.now() + "_" + file.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
     
     try {
+        // A. Subida física del archivo al Storage de Supabase
         const { error } = await supabaseClient.storage.from('catalogos').upload(path, file);
         if (error) throw error;
         
         const { data } = supabaseClient.storage.from('catalogos').getPublicUrl(path);
         
+        // B. CONSULTA DIRECTA REST BLINDADA: Evitamos maybeSingle() para capturar el ID de forma segura
         const urlFetch = SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=id&seccion_id=eq.' + encodeURIComponent(seccionActiva) + '&orden=eq.' + puestoActivo;
         const respuestaFetch = await fetch(urlFetch, {
             headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
@@ -133,17 +136,23 @@ async function subirImagenPuesto() {
         
         let idVerdadero = null;
         if (datosExistentes && Array.isArray(datosExistentes) && datosExistentes.length > 0) {
-            idVerdadero = datosExistentes.id; 
+            idVerdadero = datosExistentes[0].id; // CORREGIDO: Se extrae el ID de la primera posición del array JSON
         }
 
         if (idVerdadero) {
+            // MODO ACTUALIZACIÓN (UPDATE): Pasamos el ID real extraído limpiamente con un fetch PATCH directo
             const urlUpdate = SUPABASE_URL + '/rest/v1/catalogo_imagenes?id=eq.' + idVerdadero;
             await fetch(urlUpdate, {
                 method: 'PATCH',
-                headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+                headers: { 
+                    'apikey': SUPABASE_ANON_KEY, 
+                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({ ruta_imagen: data.publicUrl })
             });
         } else {
+            // MODO CREACIÓN (INSERT): Si el puesto estaba completamente vacío
             await supabaseClient
                 .from('catalogo_imagenes')
                 .insert([{ seccion_id: seccionActiva, orden: puestoActivo, ruta_imagen: data.publicUrl }]);
@@ -151,13 +160,14 @@ async function subirImagenPuesto() {
         
         alert("¡Éxito! Imagen del catálogo tradicional actualizada en vivo.");
         fileInput.value = ""; 
-        descargarYRenderizarImagenes();
+        descargarYRenderizarImagenes(); // Refresca las miniaturas del panel de control
         
     } catch(e) { 
         console.error("Error en subida de puesto fijo:", e);
         alert("No se pudo actualizar: " + (e.message || e)); 
     }
 }
+
 
 // =========================================================================
 // 5. RENDERIZADO DESDE LA API REST DE SUPABASE (CATÁLOGO FIJO S1-S12)
