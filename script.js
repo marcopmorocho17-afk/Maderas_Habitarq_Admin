@@ -153,14 +153,14 @@ function seleccionarParaAgregarNuevaImagen(seccionId, nombreProducto) {
     }
 }
 // =========================================================================
-// 3C. ACCIÓN DISPARADORA DEL BOTÓN DE MENOS (❌) - BORRADO SELECTIVO POR ID
+// 3C. ACCIÓN DISPARADORA DEL BOTÓN DE MENOS (❌) - BORRADO SELECTIVO INDIVIDUAL
 // =========================================================================
 async function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
     seccionActiva = seccionId;
     puestoActivo = null; // Anulamos puesto tradicional
     esNuevaInsercionAcumulativa = false;
 
-    // Marcamos visualmente las tarjetas antiguas
+    // Marcamos visualmente las tarjetas antiguas de tu panel
     document.querySelectorAll('.item-variante').forEach(function(el) {
         el.style.border = "";
         el.style.background = "";
@@ -172,24 +172,24 @@ async function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
     }
 
     // A. CAPTURA O CREACIÓN EN CALIENTE DEL MENÚ DESPLEGABLE EN EL FORMULARIO
-    // Buscamos si ya existe el selector de borrar. Si no, lo inyectamos abajo de la casilla de nombre
     let selectBorrar = document.getElementById('selectBorrarImagenExtra');
     if (!selectBorrar) {
+        // Buscamos el contenedor de características para colgarle el menú de selección individual
         const bloqueTexto = document.getElementById('bloqueSubVariantesFijas');
         if (bloqueTexto) {
             const contenedorSelect = document.createElement('div');
             contenedorSelect.id = "contenedorSelectBorrarDinamico";
-            contenedorSelect.style.cssText = "margin-top: 10px; padding: 8px; background: #fee2e2; border-radius: 6px; border: 1px solid #f87171;";
+            contenedorSelect.style.cssText = "margin-top: 12px; padding: 10px; background: #fee2e2; border-radius: 6px; border: 1px solid #f87171; text-align: left;";
             contenedorSelect.innerHTML = `
                 <label style="font-size: 11px; font-weight: bold; color: #991b1b; display: block; margin-bottom: 4px;">🗑️ Selecciona la imagen específica que deseas borrar:</label>
-                <select id="selectBorrarImagenExtra" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; font-family: inherit; background:#fff;"></select>
+                <select id="selectBorrarImagenExtra" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; font-family: inherit; background:#fff; color:#1e293b;"></select>
             `;
             bloqueTexto.appendChild(contenedorSelect);
             selectBorrar = document.getElementById('selectBorrarImagenExtra');
         }
     }
 
-    // Mostramos el contenedor si estaba oculto
+    // Encendemos el cuadro si estaba oculto por una operación previa
     const contenedorPadreSelect = document.getElementById('contenedorSelectBorrarDinamico');
     if (contenedorPadreSelect) contenedorPadreSelect.style.display = "block";
 
@@ -221,7 +221,7 @@ async function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
         btn.style.backgroundColor = "#ef4444";
         btn.style.cursor = "pointer";
         
-        // Sobreescribimos el clic para que borre el registro seleccionado
+        // Sobreescribimos el clic para que borre únicamente el registro seleccionado del menú
         btn.onclick = async function() {
             const idParaBorrar = document.getElementById('selectBorrarImagenExtra') ? document.getElementById('selectBorrarImagenExtra').value : null;
             if (!idParaBorrar) return alert("Por favor, selecciona primero una imagen de la lista desplegable.");
@@ -239,7 +239,7 @@ async function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
 
                 alert("¡Éxito! La imagen seleccionada ha sido borrada permanentemente.");
                 
-                // Restauramos el formulario a su estado original
+                // Ocultamos la lista y restauramos el botón a su estado nativo original de subida
                 if (contenedorPadreSelect) contenedorPadreSelect.style.display = "none";
                 btn.textContent = "Actualizar Imagen Web";
                 btn.style.backgroundColor = "#94a3b8";
@@ -254,8 +254,6 @@ async function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
         };
     }
 }
-// Vinculación explícita al final de tu archivo script.js de admin
-window.seleccionarParaBorrarImagenesExtra = seleccionarParaBorrarImagenesExtra;
 // =========================================================================
 // 4. SUBIDA POR COORDENADAS CON NOMBRE PLANO ACUMULATIVO (INSERCION PURA - CORREGIDA)
 // =========================================================================
