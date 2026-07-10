@@ -595,3 +595,5 @@ window.prepararEdicionModular = prepararEdicionModular;
 window.resetearFormularioModular = resetearFormularioModular;
 window.listarModularesAdmin = listarModularesAdmin;
 window.eliminarProductoModular = eliminarProductoModular;
+// Añade esta línea al puro fondo de tu script de administración junto con las otras vinculaciones
+window.eliminarFotoTradicionalPorId = eliminarFotoTradicionalPorId;
