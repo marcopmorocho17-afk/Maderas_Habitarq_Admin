@@ -7,13 +7,8 @@
     <title>Panel de Control Oculto</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
-
-
 <body>
-
     <div class="web-wrapper">
-
         <!-- TARJETA DEL PANEL DE CONTROL PRINCIPAL -->
         <div class="admin-wrapper">
             <div class="container">
@@ -286,6 +281,24 @@
                                 onclick="seleccionarPosicion('Seccion2', 4, 'Rastrera de 9cm (M2)')">
                                 <img id="img-S2-P4" src="otros/R4.png" alt="Rastrera de 9cm" /><span>Rastrera de
                                     9cm</span>
+                            </div>
+                                              <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ (MANTÉNLO TAL COMO ESTÁ)
+                                 ========================================================================= -->
+                            <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion1', 'Duelas')" 
+                                 style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                            </div>
+
+                            <!-- =========================================================================
+                                 NUEVO CUADRO INTERACTIVO AISLADO: COMANDO ❌ PARA LIMPIAR GALERÍA
+                                 ========================================================================= -->
+                            <!-- Reutiliza tus clases nativas pero con estilos de alerta rojos limpios -->
+                            <div class="item-variante" onclick="seleccionarParaBorrarImagenesExtra('Seccion1', 'Duelas')" 
+                                 style="border: 2px dashed #f87171 !important; background: #fef2f2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #ef4444; font-weight: bold; line-height: 1;">❌</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Borrar Extras</span>
                             </div>
                         </div>
                     </div>
