@@ -410,33 +410,36 @@ async function subirCatalogoPDF() {
 }
 
 // =========================================================================
-// 8. CONTROL MULTI-VIDEO: CARGAR, SUBIR ACUMULATIVO Y ELIMINACIÓN INDIVIDUAL (CORREGIDO)
+// 8. CONTROL MULTI-VIDEO: CARGAR, SUBIR ACUMULATIVO Y ELIMINACIÓN INDIVIDUAL
 // =========================================================================
 async function cargarCuadriculaVideosAdmin() {
     const contenedor = document.getElementById('cuadriculaVideosAdmin');
     if (!contenedor) return;
     try {
-        // Descargamos la lista actualizada de videos comerciales en caliente
-        const { data: videosDB, error } = await supabaseClient.from('videos').select('id, titulo, ruta_video');
-        if (error) throw error;
-        
+        // CORRECCIÓN REST: Trae estrictamente los tres campos reales de tu tabla de Supabase
+        const urlFetch = SUPABASE_URL + '/rest/v1/videos?select=id,titulo,ruta_video';
+        const respuesta = await fetch(urlFetch, {
+            headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+        });
+        const videosDB = await respuesta.json();
+
         contenedor.innerHTML = '';
         
         if (videosDB && Array.isArray(videosDB) && videosDB.length > 0) {
-            // Forzamos la cuadrícula horizontal elástica para ver las tarjetas en fila
+            // Forzamos la cuadrícula horizontal elástica para ver las tarjetas en fila simétrica
             contenedor.style.cssText = "display: grid !important; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important; gap: 15px !important; width: 100% !important; box-sizing: border-box !important;";
 
             videosDB.forEach(function(video) {
                 const tarjetaVideo = document.createElement('div');
                 tarjetaVideo.style.cssText = "border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; padding: 10px; display: flex; flex-direction: column; min-height: 200px; box-sizing: border-box; position: relative;";
                 
-                // Inyectamos el reproductor y el botón rojo de borrado individual programado por ID único
+                // Mapeo simétrico inyectando la ruta pública real del video y su identificador único
                 tarjetaVideo.innerHTML = `
                     <div style="flex: 1; background: #000; display: flex; align-items: center; justify-content: center; min-height: 110px; max-height: 120px; border-radius: 6px; overflow: hidden;">
-                        <video src="${video.ruta_video}" controls style="width: 100%; max-height: 100%;" muted></video>
+                        <video src="${video.ruta_video}" controls style="width: 100%; max-height: 100%; object-fit: contain;" muted></video>
                     </div>
                     <div style="padding-top: 6px; text-align: center;">
-                        <strong style="font-size: 12px; color: #1e293b; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${video.titulo}</strong>
+                        <strong style="font-size: 12px; color: #1e293b; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: inherit;">${video.titulo}</strong>
                         <button onclick="eliminarVideoPorId('${video.id}', '${video.titulo.replace(/'/g, "\\'")}')" 
                                 style="background-color: #dc2626; color: white; padding: 6px; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 6px;">
                             🗑️ Eliminar Video
@@ -445,31 +448,30 @@ async function cargarCuadriculaVideosAdmin() {
                 contenedor.appendChild(tarjetaVideo);
             });
         } else {
-            // Mensaje de respaldo limpio si no hay registros válidos en Supabase
+            // Leyenda de respaldo idéntica a tu captura si la tabla está vacía
             contenedor.innerHTML = `<div style="grid-column: 1 / -1; color: #94a3b8; font-size: 13px; font-style: italic; text-align: center; padding: 20px 0;">🔮 No hay videos activos.</div>`;
         }
     } catch (err) { console.error("Error cargando rejilla de videos:", err); }
 }
 
-// MOTOR DE SUBIDA ACUMULATIVA CON ÍNDICE CORREGIDO
+// MOTOR DE SUBIDA ACUMULATIVA: Captura física de la primera posición del array de red
 async function subirNuevoVideoAnuncio() {
     const videoInput = document.getElementById('inputVideoOculto');
     if (!videoInput || !videoInput.files.length) return;
     
-    // REPARACIÓN DEFINITIVA: Captura estrictamente la primera posición del array de archivos
     const archivo = videoInput.files[0]; 
     const nombreUnico = Date.now() + "_" + archivo.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
     
     try {
         alert("⏳ Subiendo video a internet... Por favor, espera un momento.");
         
-        // A. Subida física del archivo MP4 al Storage de Supabase
+        // A. Subida del archivo MP4 al Storage de Supabase
         const { error: storageError } = await supabaseClient.storage.from('catalogos').upload("videos/" + nombreUnico, archivo);
         if (storageError) throw storageError;
         
         const { data: urlData } = supabaseClient.storage.from('catalogos').getPublicUrl("videos/" + nombreUnico);
         
-        // B. Inserción limpia del registro con su URL pública real de internet
+        // B. Inserción de la nueva fila en la tabla de internet de Supabase
         const { error: errorInsert } = await supabaseClient.from('videos').insert([{ 
             titulo: archivo.name.replace('.mp4', '').replace('.mov', '').replace('.avi', ''), 
             ruta_video: urlData.publicUrl, 
@@ -480,14 +482,14 @@ async function subirNuevoVideoAnuncio() {
         
         alert("¡Éxito! Video comercial incorporado correctamente a la cartelera.");
         videoInput.value = ""; 
-        cargarCuadriculaVideosAdmin(); // Refresca tu panel en caliente para pintar el video
+        cargarCuadriculaVideosAdmin(); // Refresca tu panel en caliente
     } catch (err) { 
         console.error(err);
         alert("Error al subir video: " + err.message); 
     }
 }
 
-// COMANDO ELIMINADOR FILTRADO POR ID ÚNICO
+// COMANDO ELIMINADOR INDIVIDUAL FILTRADO POR ID ÚNICO
 async function eliminarVideoPorId(videoId, nombreVideo) {
     if (!confirm("¿Estás seguro de que deseas eliminar permanentemente el video '" + nombreVideo + "' del catálogo web?")) {
         return;
@@ -497,7 +499,7 @@ async function eliminarVideoPorId(videoId, nombreVideo) {
         if (error) throw error;
         
         alert("¡Éxito! El anuncio ha sido removido.");
-        cargarCuadriculaVideosAdmin(); // Refresca el panel de inmediato
+        cargarCuadriculaVideosAdmin(); // Refresca el panel de inmediato para desaparecer la tarjeta
     } catch (err) {
         alert("No se pudo eliminar el video: " + err.message);
     }
