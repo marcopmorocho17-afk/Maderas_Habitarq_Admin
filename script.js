@@ -200,7 +200,7 @@ function seleccionarParaAgregarNuevaImagen(seccionId, nombreProducto) {
     }
 }
 // =========================================================================
-// 4. SUBIDA POR COORDENADAS: MOTOR INTELIGENTE DUAL (EDITA EXISTENTES O AÑADE CON ➕)
+// 4. SUBIDA POR COORDENADAS: MOTOR INTELIGENTE DUAL (CORREGIDO PARA TU ESQUEMA)
 // =========================================================================
 async function subirImagenPuesto() {
     const fileInput = document.getElementById('nuevaImagen');
@@ -210,7 +210,7 @@ async function subirImagenPuesto() {
     if (!seccionActiva || !puestoActivo) return alert("Por favor, selecciona una miniatura o presiona el botón ➕.");
 
     const nombreVariante = txtNombre ? txtNombre.value.trim() : "";
-    const file = fileInput.files[0]; // Captura física del archivo individual
+    const file = fileInput.files[0]; // Captura física del archivo individual en la posición cero
     const path = "posiciones/sub_variantes/" + Date.now() + "_" + file.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
     
     try {
@@ -222,15 +222,14 @@ async function subirImagenPuesto() {
         
         // B. EVALUACIÓN DE CAMINO: ¿Viene del botón más (+) o es una edición de miniatura fija?
         if (esNuevaInsercionAcumulativa) {
-            // MODO CAMINO ➕ (SOLO AGREGA): Inserta una fila elástica totalmente nueva en internet
+            // MODO CAMINO ➕ (SOLO AGREGA): Inserta una fila elástica limpia compatible con tu tabla actual
             const { error: errInsert } = await supabaseClient
                 .from('catalogo_imagenes')
                 .insert([{
                     seccion_id: seccionActiva,
-                    orden: puestoActivo, // Guarda la firma temporal única para que no pise nada anterior
+                    orden: puestoActivo, // Firma temporal única para acumular imágenes sin límites
                     ruta_imagen: urlData.publicUrl,
-                    nombre_sub_variante: nombreVariante,  
-                    caracteristicas_tecnicas: "" 
+                    nombre_sub_variante: nombreVariante
                 }]);
 
             if (errInsert) throw errInsert;
