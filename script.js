@@ -229,17 +229,21 @@ async function subirImagenPuesto() {
     }
 }
 // =========================================================================
-// 5. RENDERIZADO DESDE LA API REST DE SUPABASE (CATÁLOGO FIJO ORIGINAL LIMPIO)
+// 5. RENDERIZADO INTELIGENTE COMPATIBLE CON PUESTOS FIJOS Y BOTÓN ➕
 // =========================================================================
 async function descargarYRenderizarImagenes() {
     try {
-        const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=seccion_id,orden,ruta_imagen', {
+        const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=id,seccion_id,orden,ruta_imagen,nombre_sub_variante', {
             headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
         });
         const imagenesDB = await respuestaFetch.json();
 
+        // 1. Limpieza de elementos dinámicos extras anteriores para no duplicar en la recarga
+        document.querySelectorAll('.item-variante-dinamica-admin').forEach(el => el.remove());
+
         if (imagenesDB && Array.isArray(imagenesDB)) {
             imagenesDB.forEach(function(item) {
+                // Determinamos el prefijo visual según la sección guardada en Supabase
                 let bloquePrefijo = "S1"; 
                 if (item.seccion_id === "Seccion2") bloquePrefijo = "S2";
                 if (item.seccion_id === "Seccion3") bloquePrefijo = "S3";
@@ -253,16 +257,48 @@ async function descargarYRenderizarImagenes() {
                 if (item.seccion_id === "Seccion11") bloquePrefijo = "S11";
                 if (item.seccion_id === "Seccion12") bloquePrefijo = "S12";
 
-                const elementoImg = document.getElementById("img-" + bloquePrefijo + "-P" + item.orden);
-                if (elementoImg) {
-                    // Parámetro dinámico anti-caché nativo original
-                    elementoImg.src = item.ruta_imagen + "?t=" + Date.now();
+                // Evaluamos si el registro es un puesto numérico tradicional o un extra del botón (+)
+                if (!isNaN(item.orden)) {
+                    // CAMINO A: Es un puesto tradicional fijo (ej: 1, 2, 3...)
+                    const elementoImg = document.getElementById("img-" + bloquePrefijo + "-P" + item.orden);
+                    if (elementoImg) {
+                        elementoImg.src = item.ruta_imagen + "?t=" + Date.now();
+                        
+                        // Si tiene un nombre plano asignado en internet, actualizamos su span nativo
+                        const elementoTexto = elementoImg.nextElementSibling;
+                        if (elementoTexto && elementoTexto.tagName === "SPAN" && item.nombre_sub_variante) {
+                            elementoTexto.textContent = item.nombre_sub_variante;
+                        }
+                    }
+                } else {
+                    // CAMINO B: Es una foto extra inyectada desde tu nuevo botón (➕)
+                    // Buscamos la etiqueta contenedora de esta sección (la caja .variante-oculta que tiene el botón +)
+                    const elementoImgBase = document.getElementById("img-" + bloquePrefijo + "-P1");
+                    if (elementoImgBase) {
+                        const contenedorVarianteOculta = elementoImgBase.closest('.variante-oculta');
+                        const botonMas = contenedorVarianteOculta ? contenedorVarianteOculta.querySelector('[onclick*="seleccionarParaAgregarNuevaImagen"]') : null;
+                        
+                        if (contenedorVarianteOculta && botonMas) {
+                            // Creamos un nuevo cuadradito dinámico idéntico para renderizar la foto en tu panel administrativo
+                            const nuevoCuadroExtra = document.createElement('div');
+                            nuevoCuadroExtra.className = 'item-variante item-variante-dinamica-admin';
+                            nuevoCuadroExtra.style.cursor = 'default';
+                            
+                            nuevoCuadroExtra.innerHTML = `
+                                <img src="${item.ruta_imagen}?t=${Date.now()}" style="width:100%; height:100%; object-fit:cover; border-radius:4px;" />
+                                ${item.nombre_sub_variante ? `<span style="display:block; font-size:11px; margin-top:4px; text-align:center;">${item.nombre_sub_variante}</span>` : '<span>Extra</span>'}
+                            `;
+                            
+                            // Lo inyectamos de forma horizontal justo antes del botón más (➕) para mantener la simetría
+                            contenedorVarianteOculta.insertBefore(nuevoCuadroExtra, botonMas);
+                        }
+                    }
                 }
             });
-            console.log("¡Las 12 secciones del catálogo administrativo se renderizaron con éxito!");
+            console.log("¡Catálogo administrativo renderizado de forma mixta con éxito!");
         }
     } catch (err) {
-        console.error("Error cargando imágenes:", err);
+        console.error("Error cargando imágenes en el panel mixto:", err);
     }
 }
 // =========================================================================
