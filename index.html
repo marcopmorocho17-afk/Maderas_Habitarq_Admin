@@ -66,56 +66,38 @@
                         style="background-color: #4a2c11; color: white; padding: 12px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">Actualizar
                         Catálogo PDF</button>
 
-                    <!-- SECCIÓN MULTIMEDIA: CONTROLADOR DE VIDEOS EN DOS NIVELES -->
-                    <div class="bloque-categoria" style="margin-top: 30px;">
-                        <button onclick="toggleSeccion('desplegableVideosAnuncios')" class="btn-desplegable"
-                            style="width: 100%;">
-                            Videos de Anuncios ▾
-                        </button>
-                        <div id="desplegableVideosAnuncios" class="desplegable-contenido"
-                            style="display: none; margin-top: 25px;">
-                            <div style="max-width: 800px; margin: 0 auto; padding: 0;">
+                           <!-- SECCIÓN VIDEOS DE ANUNCIOS -->
+        <div class="bloque-categoria" style="margin-top: 30px;">
+            <button onclick="toggleSeccion('desplegableVideos')" class="btn-desplegable">
+                VideosdeAnuncios ▾
+            </button>
+            <div id="desplegableVideos" class="desplegable-contenido" style="display: none; margin-top: 25px; text-align: center;">
+                
+                <!-- Botón oculto nativo para capturar el archivo de video -->
+                <input type="file" id="inputVideoOculto" accept="video/mp4,video/mov,video/avi" onchange="subirNuevoVideoAnuncio()" style="display: none;">
+                
+                <!-- Cuadro interactivo para disparar la subida -->
+                <div onclick="document.getElementById('inputVideoOculto').click()" 
+                     style="border: 2px dashed #a8a29e; background: #fafaf9; padding: 25px; border-radius: 8px; cursor: pointer; display: inline-block; width: 80%; max-width: 400px; margin-bottom: 20px;">
+                    <span style="font-size: 32px; color: #64748b; font-weight: bold; display: block; margin-bottom: 5px;">+</span>
+                    <span style="font-size: 13px; color: #475569; font-weight: bold; text-transform: uppercase;">Agregar Video Nuevo</span>
+                </div>
 
-                                <!-- BLOQUE SUPERIOR: CUADRO DE AGREGAR INTERACTIVO -->
-                                <div style="border: 2px dashed #cbd5e1; border-radius: 8px; background: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; cursor: pointer; transition: all 0.2s; box-sizing: border-box; padding: 15px; margin-bottom: 10px;"
-                                    onclick="document.getElementById('inputVideoOculto').click();"
-                                    onmouseover="this.style.borderColor='#1cbd5d'; this.style.background='#f0fdf4';"
-                                    onmouseout="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc';">
-                                    <span
-                                        style="font-size: 36px; color: #94a3b8; font-weight: 300; line-height: 1;">+</span>
-                                    <span id="textoElegirVideo"
-                                        style="font-size: 14px; color: #64748b; font-weight: bold; margin-top: 5px;">Agregar
-                                        Video Nuevo</span>
+                <div style="text-align: left; margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                    <h4 style="font-size: 14px; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                        🎬 Videos activos en la cartelera web:
+                    </h4>
+                    
+                    <!-- =========================================================================
+                         CAJA RECEPTORA CRUCIAL (AQUÍ SE PINTARÁN TUS VIDEOS EN FILA)
+                         ========================================================================= -->
+                    <div id="cuadriculaVideosAdmin" style="width: 100%; min-height: 50px;">
+                        <div style="color: #94a3b8; font-size: 13px; font-style: italic; text-align: center; padding: 10px 0;">🔮 No hay videos activos.</div>
+                    </div>
+                </div>
 
-                                    <!-- Input binario oculto que captura el archivo comercial -->
-                                    <input type="file" id="inputVideoOculto" accept="video/mp4" style="display: none;"
-                                        onchange="const archivo = this.files[0]; if(archivo) { document.getElementById('textoElegirVideo').textContent = '🎬 Seleccionado: ' + archivo.name; document.getElementById('bloqueBtnSubirVideo').style.display = 'block'; }">
-                                </div>
-
-                                <!-- CONTENEDOR DINÁMICO: Muestra el botón verde físico únicamente cuando ya seleccionaste un MP4 -->
-                                <div id="bloqueBtnSubirVideo"
-                                    style="display: none; text-align: center; margin-bottom: 20px;">
-                                    <button
-                                        onclick="subirNuevoVideoAnuncio(); document.getElementById('bloqueBtnSubirVideo').style.display = 'none'; document.getElementById('textoElegirVideo').textContent = 'Agregar Video Nuevo';"
-                                        style="background-color: #1cbd5d; color: white; padding: 12px 25px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; transition: background 0.2s; width: 100%; box-shadow: 0 2px 4px rgba(28,189,93,0.2);">
-                                        🚀 Subir Video Seleccionado
-                                    </button>
-                                </div>
-
-                                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
-                                <p
-                                    style="font-weight: bold; color: #1e293b; font-size: 14px; margin-bottom: 15px; text-align: left;">
-                                    🎬 Videos activos en la cartelera web:</p>
-
-                                <!-- BLOQUE INFERIOR: CUADRÍCULA DONDE SE LISTARÁN LAS TARJETAS CON BOTÓN ELIMINAR -->
-                                <div id="cuadriculaVideosAdmin"
-                                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding: 5px 0;">
-                                    <!-- Las tarjetas de los videos se inyectarán aquí abajo dinámicamente -->
-                                </div>
-
-                            </div>
-                        </div>
-                    </div> <!-- Fin bloque-categoria videos -->
+            </div>
+        </div>
 
                     <!-- SECCIÓN NUEVA: GESTOR INTERACTIVO DE PRODUCTOS MODULARES ILIMITADOS -->
                     <div class="bloque-categoria" style="margin-top: 30px;">
