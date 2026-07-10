@@ -59,7 +59,7 @@
 // ==========================================
 // 1. CONFIGURACIÓN Y CONEXIÓN CON SUPABASE
 // ==========================================
-const ADMIN_PASSWORD = "Maderas2026";
+const ADMIN_PASSWORD = "Maderas_Habitarq";
 const SUPABASE_URL = "https://mpjwdgekznvukmpprlat.supabase.co"; 
 const SUPABASE_ANON_KEY = "sb_publishable_lnwuBk9887iZy76uvAxeIQ_8StvDZ8K";
 
