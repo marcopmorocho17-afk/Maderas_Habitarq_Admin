@@ -1,8 +1,8 @@
 // =========================================================================
 // 1. CONFIGURACIÓN Y CONEXIÓN CON SUPABASE (ENTORNO SEGURO)
 // =========================================================================
-const ADMIN_PASSWORD = "Maderas_Habitarq";
-const SUPABASE_URL = "https://mpjwdgekznvukmpprlat.supabase.co"; 
+const ADMIN_PASSWORD = "Maderas2026";
+const SUPABASE_URL = "https://supabase.co"; 
 const SUPABASE_ANON_KEY = "sb_publishable_lnwuBk9887iZy76uvAxeIQ_8StvDZ8K";
 
 // Mini-librería con aislamiento nativo estable contra errores CORS
@@ -81,7 +81,7 @@ function entrarAdmin() {
         mainPublico.hidden = false;
         descargarYRenderizarImagenes();
         cargarCuadriculaVideosAdmin();
-        listarModularesAdmin(); // Ejecución inicial garantizada
+        listarModularesAdmin(); 
     } else {
         statusMessage.textContent = "Contraseña incorrecta.";
         alert("Contraseña incorrecta. Por favor, vuelve a intentarlo.");
@@ -115,7 +115,7 @@ async function subirImagenPuesto() {
     const fileInput = document.getElementById('nuevaImagen');
     if (!fileInput || !fileInput.files.length) return alert("Selecciona una imagen antes de continuar.");
     
-    const file = fileInput.files[0]; 
+    const file = fileInput.files; 
     const path = "posiciones/" + Date.now() + "_" + file.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
     
     try {
@@ -132,7 +132,7 @@ async function subirImagenPuesto() {
         
         let idVerdadero = null;
         if (datosExistentes && Array.isArray(datosExistentes) && datosExistentes.length > 0) {
-            idVerdadero = datosExistentes[0].id; 
+            idVerdadero = datosExistentes.id; 
         }
 
         if (idVerdadero) {
@@ -185,7 +185,7 @@ async function descargarYRenderizarImagenes() {
 
                 const elementoImg = document.getElementById("img-" + bloquePrefijo + "-P" + item.orden);
                 if (elementoImg) {
-                    // BLINDAJE ANTI-CACHÉ: Agrega la marca de tiempo para obligar a Edge a mostrar la foto nueva
+                    // BLINDAJE ANTI-CACHÉ: Forzamos la actualización inmediata añadiendo la marca de tiempo
                     elementoImg.src = item.ruta_imagen + "?t=" + Date.now();
                 }
             });
@@ -266,6 +266,9 @@ async function cargarCuadriculaVideosAdmin() {
     } catch (err) { console.error(err); }
 }
 
+// =========================================================================
+// 9. SUBIR UN NUEVO VIDEO DESDE EL CUADRADO DEL SIGNO DE MÁS (➕)
+// =========================================================================
 async function subirNuevoVideoAnuncio() {
     const videoInput = document.getElementById('inputVideoOculto');
     if (!videoInput || !videoInput.files.length) return;
@@ -282,14 +285,18 @@ async function subirNuevoVideoAnuncio() {
     } catch (err) { alert("Error al subir video: " + err.message); }
 }
 
+// =========================================================================
+// 10. ELIMINAR UN VIDEO ESPECÍFICO DE LA LISTA POR SU ID
+// =========================================================================
 async function eliminarVideoPorId(videoId) {
     if (confirm("¿Estás seguro de que deseas eliminar este video?")) {
         await supabaseClient.from('videos').delete().eq('id', videoId);
         cargarCuadriculaVideosAdmin();
     }
 }
+
 // =========================================================================
-// 9. MULTIMEDIA AVANZADA: GESTOR DE PRODUCTOS MODULARES (RESCATE POR ÚLTIMO ID)
+// 11. MULTIMEDIA AVANZADA: GESTOR DE PRODUCTOS MODULARES (CREAR, EDITAR Y ELIMINAR)
 // =========================================================================
 async function guardarProductoModularCompleto() {
     const titulo = document.getElementById('modTitulo').value.trim();
@@ -303,7 +310,7 @@ async function guardarProductoModularCompleto() {
         let rutaPortadaFinal = null;
 
         if (portadaInput.files.length > 0) {
-            const filePortada = portadaInput.files[0]; // Captura limpia de la portada
+            const filePortada = portadaInput.files[0]; 
             const pathPortada = "modulares/portadas/" + Date.now() + "_" + filePortada.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
             const { error: errCover } = await supabaseClient.storage.from('catalogos').upload(pathPortada, filePortada);
             if (errCover) throw errCover;
@@ -336,8 +343,7 @@ async function guardarProductoModularCompleto() {
             
             if (todosLosProds && Array.isArray(todosLosProds) && todosLosProds.length > 0) {
                 todosLosProds.sort(function(a, b) { return b.id - a.id; });
-                // CORREGIDO DEFINITIVAMENTE: Extrae el ID de la primera posición del array ordenado
-                idSeguro = todosLosProds[0].id; 
+                idSeguro = todosLosProds[0].id; // Extracción limpia corregida por posición cero indexada
             }
         }
 
@@ -360,7 +366,7 @@ async function guardarProductoModularCompleto() {
             }
         }
 
-        alert(idProductoEdicion ? "¡Producto editado correctamente!" : "¡Producto modular publicado con éxito con todas sus variantes!");
+        alert(idProductoEdicion ? "¡Producto editado correctamente!" : "¡Producto modular publicado con éxito!");
         resetearFormularioModular();
         listarModularesAdmin(); 
 
@@ -370,9 +376,7 @@ async function guardarProductoModularCompleto() {
     }
 }
 
-// =========================================================================
-// 10. FUNCIONES COMPLEMENTARIAS DE EDICIÓN, LISTADO Y RESETEO
-// =========================================================================
+// FUNCIONES INTERNAS DEL GESTOR MODULAR (LLAMADAS DESDE LA FUNCIÓN 11)
 async function prepararEdicionModular(id, titulo, descripcion) {
     idProductoEdicion = id; 
     document.getElementById('modTitulo').value = titulo;
@@ -442,7 +446,7 @@ async function eliminarProductoModular(id) {
     }
 }
 
-// Vinculaciones obligatorias en el árbol global window al final del archivo
+// Vinculaciones obligatorias en el árbol global window
 window.entrarAdmin = entrarAdmin;
 window.toggleSeccion = toggleSeccion;
 window.seleccionarPosicion = seleccionarPosicion;
@@ -456,4 +460,3 @@ window.prepararEdicionModular = prepararEdicionModular;
 window.resetearFormularioModular = resetearFormularioModular;
 window.listarModularesAdmin = listarModularesAdmin;
 window.eliminarProductoModular = eliminarProductoModular;
-
