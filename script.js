@@ -1,8 +1,6 @@
 // =========================================================================
-
-// ==========================================
-// 1. CONFIGURACIÓN Y CONEXIÓN CON SUPABASE
-// ==========================================
+// 1. CONFIGURACIÓN Y CONEXIÓN CON SUPABASE (ENTORNO SEGURO)
+// =========================================================================
 const ADMIN_PASSWORD = "Maderas_Habitarq";
 const SUPABASE_URL = "https://mpjwdgekznvukmpprlat.supabase.co"; 
 const SUPABASE_ANON_KEY = "sb_publishable_lnwuBk9887iZy76uvAxeIQ_8StvDZ8K";
@@ -60,61 +58,72 @@ const SUPABASE_ANON_KEY = "sb_publishable_lnwuBk9887iZy76uvAxeIQ_8StvDZ8K";
 })(window);
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-let seccionActiva = null, puestoActivo = null;
 
-/**
- * 2. CONTROL DE ACCESO (LOGIN)
- */
+// Variables globales de control de estado
+let seccionActiva = null;
+let puestoActivo = null;
+let idProductoEdicion = null; 
+
+// =========================================================================
+// 2. CONTROL DE ACCESO (LOGIN)
+// =========================================================================
 function entrarAdmin() {
-    if (document.getElementById('adminPassword').value === ADMIN_PASSWORD) {
-        document.getElementById('loginBox').hidden = true;
-        document.getElementById('adminPanel').hidden = false;
-        document.getElementById('statusMessage').textContent = "Acceso concedido.";
-        document.getElementById('mainPublico').hidden = false;
+    const password = document.getElementById('adminPassword').value;
+    const loginBox = document.getElementById('loginBox');
+    const adminPanel = document.getElementById('adminPanel');
+    const statusMessage = document.getElementById('statusMessage');
+    const mainPublico = document.getElementById('mainPublico');
+
+    if (password === ADMIN_PASSWORD) {
+        loginBox.hidden = true;
+        adminPanel.hidden = false;
+        statusMessage.textContent = "Acceso concedido al panel de administración.";
+        mainPublico.hidden = false;
         descargarYRenderizarImagenes();
         cargarCuadriculaVideosAdmin();
-        listarModularesAdmin(); 
+        listarModularesAdmin(); // Ejecución inicial garantizada
     } else {
-        alert("Contraseña incorrecta.");
+        statusMessage.textContent = "Contraseña incorrecta.";
+        alert("Contraseña incorrecta. Por favor, vuelve a intentarlo.");
     }
 }
 
-function toggleSeccion(id) {
-    const c = document.getElementById(id), b = event.currentTarget;
-    const textoBase = b.innerHTML.replace(/[▾▴\s]/g, '');
-    if (c.style.display === "none" || c.style.display === "") { c.style.display = "block"; b.innerHTML = textoBase + " ▴"; }
-    else { c.style.display = "none"; b.innerHTML = textoBase + " ▾"; }
-}
-
-/**
- * 3. CAPTURA EL CLIC DIRECTO DEL CATÁLOGO FIJO (S1-S12)
- */
+// =========================================================================
+// 3. CAPTURA EL CLIC DIRECTO DEL CATÁLOGO FIJO (S1-S12)
+// =========================================================================
 function seleccionarPosicion(seccionId, puesto, nombreProducto) {
-    seccionActiva = seccionId; puestoActivo = puesto;
-    document.querySelectorAll('.item-variante').forEach(el => el.classList.remove('seleccionado'));
+    seccionActiva = seccionId; 
+    puestoActivo = puesto;
+    
+    document.querySelectorAll('.item-variante').forEach(function(el) {
+        el.classList.remove('seleccionado');
+    });
+    
     event.currentTarget.classList.add('seleccionado');
     document.getElementById('indicadorSeleccion').innerHTML = "🎯 Reemplazando: <strong>" + nombreProducto + "</strong>";
-    const btn = document.getElementById('btnSubir'); btn.disabled = false; btn.style.backgroundColor = "#1cbd5d"; btn.style.cursor = "pointer";
+    
+    const btn = document.getElementById('btnSubir'); 
+    btn.disabled = false; 
+    btn.style.backgroundColor = "#1cbd5d"; 
+    btn.style.cursor = "pointer";
 }
 
-/**
- * 4. SUBIDA POR COORDENADAS DE SELECCIÓN POR CLIC (CATÁLOGO FIJO - REPARADA AL 100%)
- */
+// =========================================================================
+// 4. SUBIDA POR COORDENADAS DE SELECCIÓN POR CLIC (CATÁLOGO FIJO)
+// =========================================================================
 async function subirImagenPuesto() {
     const fileInput = document.getElementById('nuevaImagen');
     if (!fileInput || !fileInput.files.length) return alert("Selecciona una imagen antes de continuar.");
     
-    const file = fileInput.files[0]; // Captura limpia de la primera posición individual
+    const file = fileInput.files[0]; 
     const path = "posiciones/" + Date.now() + "_" + file.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
     
     try {
-        // A. Subida física del archivo al Storage de Supabase
         const { error } = await supabaseClient.storage.from('catalogos').upload(path, file);
         if (error) throw error;
         
         const { data } = supabaseClient.storage.from('catalogos').getPublicUrl(path);
         
-        // B. CONSULTA DIRECTA REST BLINDADA: Evitamos maybeSingle() para capturar el ID de forma segura
         const urlFetch = SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=id&seccion_id=eq.' + encodeURIComponent(seccionActiva) + '&orden=eq.' + puestoActivo;
         const respuestaFetch = await fetch(urlFetch, {
             headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
@@ -123,23 +132,17 @@ async function subirImagenPuesto() {
         
         let idVerdadero = null;
         if (datosExistentes && Array.isArray(datosExistentes) && datosExistentes.length > 0) {
-            idVerdadero = datosExistentes[0].id; // Extraemos el ID numérico real de la primera posición
+            idVerdadero = datosExistentes[0].id; 
         }
 
         if (idVerdadero) {
-            // MODO ACTUALIZACIÓN (UPDATE): Pasamos el ID real extraído limpiamente con un fetch PATCH directo
             const urlUpdate = SUPABASE_URL + '/rest/v1/catalogo_imagenes?id=eq.' + idVerdadero;
             await fetch(urlUpdate, {
                 method: 'PATCH',
-                headers: { 
-                    'apikey': SUPABASE_ANON_KEY, 
-                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ruta_imagen: data.publicUrl })
             });
         } else {
-            // MODO CREACIÓN (INSERT): Si el puesto estaba completamente vacío
             await supabaseClient
                 .from('catalogo_imagenes')
                 .insert([{ seccion_id: seccionActiva, orden: puestoActivo, ruta_imagen: data.publicUrl }]);
@@ -147,7 +150,7 @@ async function subirImagenPuesto() {
         
         alert("¡Éxito! Imagen del catálogo tradicional actualizada en vivo.");
         fileInput.value = ""; 
-        descargarYRenderizarImagenes(); // Refresca las miniaturas del panel de control
+        descargarYRenderizarImagenes();
         
     } catch(e) { 
         console.error("Error en subida de puesto fijo:", e);
@@ -155,9 +158,9 @@ async function subirImagenPuesto() {
     }
 }
 
-/**
- * 5. RENDERIZADO DESDE LA API REST DE SUPABASE (RECUPERADA CON SECCIÓN ANTI-CACHÉ)
- */
+// =========================================================================
+// 5. RENDERIZADO DESDE LA API REST DE SUPABASE (CATÁLOGO FIJO S1-S12)
+// =========================================================================
 async function descargarYRenderizarImagenes() {
     try {
         const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=seccion_id,orden,ruta_imagen', {
@@ -193,9 +196,9 @@ async function descargarYRenderizarImagenes() {
     }
 }
 
-/**
- * 6. CONTROL INTERACTIVO DE MÚLTIPLES DESPLEGABLES (DINÁMICO)
- */
+// =========================================================================
+// 6. CONTROL INTERACTIVO DE MÚLTIPLES DESPLEGABLES (DINÁMICO)
+// =========================================================================
 function toggleSeccion(idContenedor) {
     const contenedor = document.getElementById(idContenedor);
     const boton = event.currentTarget; 
@@ -210,185 +213,84 @@ function toggleSeccion(idContenedor) {
     }
 }
 
-/**
- * 7. SUBIDA DEL ARCHIVO PDF GENERAL DEL CATÁLOGO
- */
+// =========================================================================
+// 7. SUBIDA DEL ARCHIVO PDF GENERAL DEL CATÁLOGO
+// =========================================================================
 async function subirCatalogoPDF() {
     const pdfInput = document.getElementById('nuevoPDF');
-    
-    if (!pdfInput.files.length) {
-        alert("Por favor, selecciona un archivo PDF primero antes de presionar el botón.");
-        return;
-    }
+    if (!pdfInput.files.length) return alert("Por favor, selecciona un archivo PDF.");
 
     const archivo = pdfInput.files[0]; 
     const nombreUnico = Date.now() + "_" + archivo.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
 
     try {
-        const { error: storageError } = await supabaseClient
-            .storage
-            .from('catalogos')
-            .upload("documentos/" + nombreUnico, archivo);
-
+        const { error: storageError } = await supabaseClient.storage.from('catalogos').upload("documentos/" + nombreUnico, archivo);
         if (storageError) throw storageError;
 
-        const { data: urlData } = supabaseClient
-            .storage
-            .from('catalogos')
-            .getPublicUrl("documentos/" + nombreUnico);
-
-        const rutaPublica = urlData.publicUrl;
-
-        const { error: errorInsert } = await supabaseClient
-            .from('catalogos') 
-            .insert([{ 
-                titulo: "Catálogo Oficial", 
-                ruta_pdf: rutaPublica, 
-                fecha_subida: new Date().toISOString() 
-            }]);
-
+        const { data: urlData } = supabaseClient.storage.from('catalogos').getPublicUrl("documentos/" + nombreUnico);
+        const { error: errorInsert } = await supabaseClient.from('catalogos').insert([{ titulo: "Catálogo Oficial", ruta_pdf: urlData.publicUrl, fecha_subida: new Date().toISOString() }]);
         if (errorInsert) throw errorInsert;
 
-        alert("¡Éxito! El archivo PDF del catálogo general se subió y vinculó a la web de inmediato.");
+        alert("¡Éxito! El archivo PDF se vinculó de inmediato.");
         pdfInput.value = ""; 
-
-    } catch (err) {
-        console.error("Error al procesar el PDF:", err);
-        alert("Ocurrió un error al subir el PDF: " + (err.message || err));
-    }
+    } catch (err) { alert("Error al subir el PDF: " + err.message); }
 }
 
-/**
- * 8. CARGAR Y RENDERIZAR TODOS LOS VIDEOS EN LA CUADRÍCULA INFERIOR
- */
+// =========================================================================
+// 8. CARGAR Y RENDERIZAR TODOS LOS VIDEOS EN LA CUADRÍCULA INFERIOR
+// =========================================================================
 async function cargarCuadriculaVideosAdmin() {
     const contenedor = document.getElementById('cuadriculaVideosAdmin');
     if (!contenedor) return;
-
     try {
-        const { data: videosDB, error } = await supabaseClient
-            .from('videos')
-            .select('id, titulo, ruta_video, fecha_subida');
-
+        const { data: videosDB, error } = await supabaseClient.from('videos').select('id, titulo, ruta_video');
         if (error) throw error;
-
         contenedor.innerHTML = '';
-
         if (videosDB && Array.isArray(videosDB) && videosDB.length > 0) {
-            const videosOrdenados = videosDB.sort(function(a, b) {
-                return new Date(b.fecha_subida) - new Date(a.fecha_subida);
-            });
-
-            videosOrdenados.forEach(function(video) {
+            videosDB.forEach(function(video) {
                 const tarjetaVideo = document.createElement('div');
-                tarjetaVideo.style.cssText = "border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; min-height: 220px; box-sizing: border-box;";
-
+                tarjetaVideo.style.cssText = "border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; padding:10px; display: flex; flex-direction: column; min-height: 220px; box-sizing: border-box;";
                 tarjetaVideo.innerHTML = `
                     <div style="flex: 1; background: #000; display: flex; align-items: center; justify-content: center; min-height: 130px; max-height: 140px;">
                         <video src="${video.ruta_video}" controls style="width: 100%; max-height: 100%;" muted></video>
                     </div>
-                    <div style="padding: 12px; display: flex; flex-direction: column; justify-content: space-between; flex: 1; gap: 8px;">
-                        <div style="text-align: center;">
-                            <strong style="font-size: 13px; color: #1e293b; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${video.titulo}</strong>
-                            <span style="font-size: 10px; color: #94a3b8; display: block; margin-top: 2px;">${new Date(video.fecha_subida).toLocaleDateString()}</span>
-                        </div>
-                        <button onclick="eliminarVideoPorId('${video.id}')" style="background-color: #dc2626; color: white; padding: 6px 12px; border: none; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%; transition: background 0.2s;">
-                            Eliminar Anuncio
-                        </button>
-                    </div>
-                `;
+                    <div style="padding-top: 8px;">
+                        <strong style="font-size: 13px; color: #1e293b; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align:center;">${video.titulo}</strong>
+                        <button onclick="eliminarVideoPorId('${video.id}')" style="background-color: #dc2626; color: white; padding: 6px; border: none; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top:8px;">Eliminar Anuncio</button>
+                    </div>`;
                 contenedor.appendChild(tarjetaVideo);
             });
         } else {
-            contenedor.innerHTML = `
-                <div style="grid-column: 1 / -1; color: #94a3b8; font-size: 13px; font-style: italic; text-align: center; padding: 20px 0; border: 1px dashed #e2e8f0; border-radius: 6px; background: #f8fafc;">
-                    ⚪ No hay videos comerciales activos en la web. Sube uno con el cuadro superior.
-                </div>
-            `;
+            contenedor.innerHTML = `<div style="grid-column: 1 / -1; color: #94a3b8; font-size: 13px; font-style: italic; text-align: center; padding: 20px 0; border: 1px dashed #e2e8f0; border-radius: 6px;">⚪ No hay videos activos.</div>`;
         }
-    } catch (err) {
-        console.error("Error al renderizar cuadrícula de videos:", err);
-    }
+    } catch (err) { console.error(err); }
 }
 
-/**
- * 9. SUBIR UN NUEVO VIDEO DESDE EL CUADRADO DEL SIGNO DE MÁS (➕)
- */
 async function subirNuevoVideoAnuncio() {
     const videoInput = document.getElementById('inputVideoOculto');
-    
     if (!videoInput || !videoInput.files.length) return;
-
     const archivo = videoInput.files[0]; 
-    const nombreLimpio = archivo.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
-    const nombreUnico = Date.now() + "_" + nombreLimpio;
-
+    const nombreUnico = Date.now() + "_" + archivo.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
     try {
-        const { error: storageError } = await supabaseClient
-            .storage
-            .from('catalogos')
-            .upload("videos/" + nombreUnico, archivo);
-
+        const { error: storageError } = await supabaseClient.storage.from('catalogos').upload("videos/" + nombreUnico, archivo);
         if (storageError) throw storageError;
-
-        const { data: urlData } = supabaseClient
-            .storage
-            .from('catalogos')
-            .getPublicUrl("videos/" + nombreUnico);
-
-        const rutaPublica = urlData.publicUrl;
-
-        const { error: errorInsert } = await supabaseClient
-            .from('videos')
-            .insert([{ 
-                titulo: archivo.name.replace('.mp4', ''), 
-                ruta_video: rutaPublica, 
-                fecha_subida: new Date().toISOString() 
-            }]);
-
+        const { data: urlData } = supabaseClient.storage.from('catalogos').getPublicUrl("videos/" + nombreUnico);
+        const { error: errorInsert } = await supabaseClient.from('videos').insert([{ titulo: archivo.name.replace('.mp4', ''), ruta_video: urlData.publicUrl, fecha_subida: new Date().toISOString() }]);
         if (errorInsert) throw errorInsert;
-
-        alert("¡Éxito! El video se ha subido e incorporado a la cartelera comercial inferior.");
-        videoInput.value = ""; 
-        cargarCuadriculaVideosAdmin(); 
-
-    } catch (err) {
-        console.error("Error al procesar la subida del video:", err);
-        alert("Ocurrió un error al subir el video: " + (err.message || err));
-        if (videoInput) videoInput.value = "";
-    }
+        alert("¡Éxito! Video comercial incorporado.");
+        videoInput.value = ""; cargarCuadriculaVideosAdmin();
+    } catch (err) { alert("Error al subir video: " + err.message); }
 }
 
-/**
- * 10. ELIMINAR UN VIDEO ESPECÍFICO DE LA LISTA POR SU ID
- */
 async function eliminarVideoPorId(videoId) {
-    if (!confirm("¿Estás seguro de que deseas eliminar este video comercial de la web?")) {
-        return;
-    }
-
-    try {
-        const { error } = await supabaseClient
-            .from('videos')
-            .delete()
-            .eq('id', videoId);
-
-        if (error) throw error; 
-
-        alert("¡Éxito! El video ha sido removido de la base de datos.");
-        cargarCuadriculaVideosAdmin(); 
-
-    } catch (err) {
-        console.error("Error al eliminar el video:", err);
-        alert("No se pudo eliminar el video: " + (err.message || err));
+    if (confirm("¿Estás seguro de que deseas eliminar este video?")) {
+        await supabaseClient.from('videos').delete().eq('id', videoId);
+        cargarCuadriculaVideosAdmin();
     }
 }
-
 // =========================================================================
-// 11. MULTIMEDIA AVANZADA: GESTOR DE PRODUCTOS MODULARES (RESCATE POR ÚLTIMO ID)
+// 9. MULTIMEDIA AVANZADA: GESTOR DE PRODUCTOS MODULARES (RESCATE POR ÚLTIMO ID)
 // =========================================================================
-let idProductoEdicion = null; 
-
 async function guardarProductoModularCompleto() {
     const titulo = document.getElementById('modTitulo').value.trim();
     const descripcion = document.getElementById('modDescripcion').value.trim();
@@ -400,9 +302,8 @@ async function guardarProductoModularCompleto() {
     try {
         let rutaPortadaFinal = null;
 
-        // A. Subir imagen de portada principal si se seleccionó un archivo
         if (portadaInput.files.length > 0) {
-            const filePortada = portadaInput.files[0]; // Captura limpia del archivo individual
+            const filePortada = portadaInput.files[0]; // Captura limpia de la portada
             const pathPortada = "modulares/portadas/" + Date.now() + "_" + filePortada.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
             const { error: errCover } = await supabaseClient.storage.from('catalogos').upload(pathPortada, filePortada);
             if (errCover) throw errCover;
@@ -413,14 +314,11 @@ async function guardarProductoModularCompleto() {
         let idSeguro = idProductoEdicion;
 
         if (idProductoEdicion) {
-            // MODO EDICIÓN: Actualizamos el registro existente
             const datosUpdate = { titulo: titulo, descripcion: descripcion };
             if (rutaPortadaFinal) datosUpdate.ruta_portada = rutaPortadaFinal;
-
             const { error: errUpdate } = await supabaseClient.from('productos_modulares').eq('id', idProductoEdicion).update(datosUpdate);
             if (errUpdate) throw errUpdate;
         } else {
-            // MODO CREACIÓN: Insertamos el registro de texto
             if (!rutaPortadaFinal) return alert("La imagen de portada es obligatoria para un producto nuevo.");
             
             const { error: errInsertMaster } = await supabaseClient.from('productos_modulares').insert([{
@@ -430,26 +328,21 @@ async function guardarProductoModularCompleto() {
             }]);
             if (errInsertMaster) throw errInsertMaster;
 
-            // MÉTODO DE RESCATE BLINDADO: Consultamos el listado plano de IDs de la tabla rest/v1
+            // RESCATE DIRECTO REST INTERCEPTORES API
             const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/productos_modulares?select=id', {
                 headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
             });
-            
             const todosLosProds = await respuestaFetch.json();
             
             if (todosLosProds && Array.isArray(todosLosProds) && todosLosProds.length > 0) {
-                // Ordenamos numéricamente de mayor a menor para capturar el último ID autogenerado
                 todosLosProds.sort(function(a, b) { return b.id - a.id; });
-                
-                // CORRECCIÓN CLAVE: Se añade el índice [0] para sacar el número entero de la primera posición
+                // CORREGIDO DEFINITIVAMENTE: Extrae el ID de la primera posición del array ordenado
                 idSeguro = todosLosProds[0].id; 
             }
         }
 
-        // Validación final de amarre relacional
         if (!idSeguro) throw new Error("No se pudo obtener el identificador relacional del producto desde el servidor.");
 
-        // B. Subir imágenes secundarias de variantes adicionales en bucle asíncrono
         if (variantesInput.files.length > 0) {
             for (let i = 0; i < variantesInput.files.length; i++) {
                 const fileVar = variantesInput.files[i];
@@ -469,7 +362,7 @@ async function guardarProductoModularCompleto() {
 
         alert(idProductoEdicion ? "¡Producto editado correctamente!" : "¡Producto modular publicado con éxito con todas sus variantes!");
         resetearFormularioModular();
-        listarModularesAdmin(); // Dibuja la tarjeta abajo de inmediato
+        listarModularesAdmin(); 
 
     } catch (err) {
         console.error(err);
@@ -477,13 +370,90 @@ async function guardarProductoModularCompleto() {
     }
 }
 
+// =========================================================================
+// 10. FUNCIONES COMPLEMENTARIAS DE EDICIÓN, LISTADO Y RESETEO
+// =========================================================================
+async function prepararEdicionModular(id, titulo, descripcion) {
+    idProductoEdicion = id; 
+    document.getElementById('modTitulo').value = titulo;
+    document.getElementById('modDescripcion').value = descripcion;
+    
+    const btn = document.querySelector("button[onclick='guardarProductoModularCompleto()']");
+    if (btn) {
+        btn.textContent = "💾 Guardar Cambios del Bloque";
+        btn.style.backgroundColor = "#2563eb"; 
+    }
+    document.getElementById('modTitulo').scrollIntoView({ behavior: 'smooth' });
+}
 
-// Vinculaciones globales requeridas al final absoluto del archivo
+function resetearFormularioModular() {
+    idProductoEdicion = null; 
+    document.getElementById('modTitulo').value = "";
+    document.getElementById('modDescripcion').value = "";
+    document.getElementById('modPortadaFile').value = "";
+    document.getElementById('modVariantesFiles').value = "";
+    
+    const btn = document.querySelector("button[onclick='guardarProductoModularCompleto()']");
+    if (btn) {
+        btn.textContent = "🚀 Publicar Producto Sin Usar Código";
+        btn.style.backgroundColor = "#1cbd5d"; 
+    }
+}
+
+async function listarModularesAdmin() {
+    const con = document.getElementById('cuadriculaModularesAdmin');
+    if (!con) return;
+    try {
+        const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/productos_modulares?select=id,titulo,descripcion,ruta_portada', {
+            headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+        });
+        const data = await respuestaFetch.json();
+        
+        con.innerHTML = '';
+        if (data && Array.isArray(data)) {
+            data.forEach(p => {
+                const tituloEscapado = p.titulo.replace(/'/g, "\\'");
+                const descEscapada = (p.descripcion || '').replace(/'/g, "\\'").replace(/\n/g, "\\n");
+
+                con.innerHTML += `
+                    <div style="border:1px solid #cbd5e1; border-radius:6px; padding:10px; background:#fff; text-align:center; display:flex; flex-direction:column; justify-content:space-between; min-height:200px;">
+                        <div>
+                            <img src="${p.ruta_portada}?t=${Date.now()}" style="width:100%; height:100px; object-fit:cover; border-radius:4px;">
+                            <strong style="font-size:12px; display:block; margin:5px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.titulo}</strong>
+                        </div>
+                        <div style="display:flex; gap:8px; margin-top:5px;">
+                            <button onclick="prepararEdicionModular('${p.id}', '${tituloEscapado}', '${descEscapada}')" style="background:#eab308; color:#fff; border:none; padding:6px; border-radius:4px; font-size:11px; flex:1; cursor:pointer; font-weight:bold;">Editar</button>
+                            <button onclick="eliminarProductoModular('${p.id}')" style="background:#dc2626; color:#fff; border:none; padding:6px; border-radius:4px; font-size:11px; flex:1; cursor:pointer; font-weight:bold;">Eliminar</button>
+                        </div>
+                    </div>`;
+            });
+        }
+    } catch(e) { console.error(e); }
+}
+
+async function eliminarProductoModular(id) {
+    if (confirm("¿Estás seguro de eliminar este producto? Se borrarán sus variantes de forma automática.")) {
+        try {
+            await supabaseClient.from('productos_modulares').eq('id', id).delete();
+            alert("Producto eliminado.");
+            if (idProductoEdicion === id) resetearFormularioModular();
+            listarModularesAdmin();
+        } catch(e) { alert(e.message); }
+    }
+}
+
+// Vinculaciones obligatorias en el árbol global window al final del archivo
+window.entrarAdmin = entrarAdmin;
 window.toggleSeccion = toggleSeccion;
+window.seleccionarPosicion = seleccionarPosicion;
+window.subirImagenPuesto = subirImagenPuesto;
 window.subirCatalogoPDF = subirCatalogoPDF;
 window.cargarCuadriculaVideosAdmin = cargarCuadriculaVideosAdmin;
 window.subirNuevoVideoAnuncio = subirNuevoVideoAnuncio;
 window.eliminarVideoPorId = eliminarVideoPorId;
 window.guardarProductoModularCompleto = guardarProductoModularCompleto;
 window.prepararEdicionModular = prepararEdicionModular;
+window.resetearFormularioModular = resetearFormularioModular;
+window.listarModularesAdmin = listarModularesAdmin;
 window.eliminarProductoModular = eliminarProductoModular;
+
