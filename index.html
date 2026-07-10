@@ -230,16 +230,25 @@
                                 <img id="img-S1-P6" src="otros/DTC.png" alt="Duelas para tendido de camas" /><span>Duelas para tendido de camas</span>
                             </div>
 
-                            <!-- =========================================================================
-                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ SIN AFECTAR LAS PORTADAS
+                                                      <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ (MANTÉNLO TAL COMO ESTÁ)
                                  ========================================================================= -->
-                            <!-- Este cuadro se mimetiza con tus estilos CSS y dispara la función acumulativa infinita -->
                             <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion1', 'Duelas')" 
                                  style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
-                                <span style="font-size: 32px; color: #78716c; font-weight: bold; line-height: 1;">➕</span>
-                                <span style="font-size: 11px; color: #78716c; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                                <span style="font-size: 32px; color: #1cbd5d; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #1cbd5d; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
                             </div>
 
+                            <!-- =========================================================================
+                                 NUEVO CUADRO INTERACTIVO AISLADO: COMANDO ❌ PARA LIMPIAR GALERÍA
+                                 ========================================================================= -->
+                            <!-- Reutiliza tus clases nativas pero con estilos de alerta rojos limpios -->
+                            <div class="item-variante" onclick="seleccionarParaBorrarImagenesExtra('Seccion1', 'Duelas')" 
+                                 style="border: 2px dashed #f87171 !important; background: #fef2f2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #ef4444; font-weight: bold; line-height: 1;">❌</span>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Borrar Extras</span>
+                            </div>
+                        </div> <!-- Fin variante-oculta -->
                         </div>
                     </div>
                 </div>
