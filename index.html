@@ -37,9 +37,19 @@
                         📌 Selecciona una foto del catálogo haciendo clic sobre ella.
                     </div>
 
-                    <div class="grupo">
+                                       <div class="grupo">
                         <label for="nuevaImagen">Selecciona la nueva Imagen:</label>
                         <input type="file" id="nuevaImagen" accept="image/*">
+                    </div>
+
+                    <!-- =========================================================================
+                         CONEXIÓN INFINITA: CASILLA NUMÉRICA PARA AGREGAR MÁS DE 4 IMÁGENES
+                         ========================================================================= -->
+                    <div style="margin: 15px 0 12px 0; text-align: left;">
+                        <label style="font-size: 13px; font-weight: bold; color: #1e293b; display: block; margin-bottom: 4px;">
+                            🔢 Número de Puesto Libre (Escribe 1 al 4, o 5, 6, 7 para fotos infinitas):
+                        </label>
+                        <input type="number" id="puestoManualInput" min="1" value="1" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: inherit;">
                     </div>
 
                     <button onclick="subirImagenPuesto()" id="btnSubir" disabled
@@ -47,6 +57,7 @@
 
                     <!-- SECCIÓN CONTROLADORA DEL CATÁLOGO PDF -->
                     <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 25px 0;">
+
 
                     <div class="grupo">
                         <label for="nuevoPDF">Subir Catálogo General (Archivo PDF):</label>
