@@ -606,6 +606,25 @@
             };
         })(window);
     </script>
+        <!-- =========================================================================
+         ESCUDO DE EXPULSIÓN ABSOLUTA: CANDADO DE PANEL POR ENLACE SECRETO
+         ========================================================================= -->
+    <script>
+        (function() {
+            // Capturamos los parámetros de la barra de direcciones de Edge
+            const parametros = new URLSearchParams(window.location.search);
+            const claveAcceso = parametros.get('acceso');
+
+            // CANDADO ULTRA ESTRICTO: Si no incluye la clave secreta exacta, es expulsado de golpe
+            if (claveAcceso !== "MaderasSecretas2026") {
+                alert("Acceso denegado: Este panel de administración está blindado. Requiere enlace de autorización secreto.");
+                
+                // Lo expulsamos de inmediato enviándolo a la página principal de los clientes
+                // Si tus archivos están en la misma carpeta, usa "index.html". Si está una carpeta atrás, usa "../index.html"
+                window.location.href = "index.html"; 
+            }
+        })();
+    </script>
     <script src="script.js"></script>
 </body>
 
