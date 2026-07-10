@@ -208,7 +208,7 @@ function seleccionarParaBorrarImagenesExtra(seccionId, nombreProducto) {
 }
 
 // =========================================================================
-// 4. SUBIDA POR COORDENADAS CON NOMBRE PLANO ACUMULATIVO (INSERCION PURA)
+// 4. SUBIDA POR COORDENADAS CON NOMBRE PLANO ACUMULATIVO (REPARADO DEFINITIVO)
 // =========================================================================
 async function subirImagenPuesto() {
     const fileInput = document.getElementById('nuevaImagen');
@@ -218,15 +218,19 @@ async function subirImagenPuesto() {
     if (!seccionActiva || !puestoActivo) return alert("Por favor, selecciona una posición o el botón ➕.");
 
     const nombreVariante = txtNombre ? txtNombre.value.trim() : "";
-    const file = fileInput.files; 
+    
+    // REPARACIÓN MAESTRA ANTI-NORMALIZE: Captura estrictamente la primera posición del array de archivos
+    const file = fileInput.files[0]; 
     const path = "posiciones/sub_variantes/" + Date.now() + "_" + file.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
     
     try {
+        // A. Subida física del archivo al Storage de Supabase
         const { error: errUpload } = await supabaseClient.storage.from('catalogos').upload(path, file);
         if (errUpload) throw errUpload;
         
         const { data: urlData } = supabaseClient.storage.from('catalogos').getPublicUrl(path);
         
+        // B. INSERCIÓN O ACTUALIZACIÓN DUAL SEGÚN EL BOTÓN PULSADO
         if (esNuevaInsercionAcumulativa) {
             await supabaseClient.from('catalogo_imagenes').insert([{
                 seccion_id: seccionActiva,
@@ -239,7 +243,7 @@ async function subirImagenPuesto() {
             const urlFetch = SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=id&seccion_id=eq.' + encodeURIComponent(seccionActiva) + '&orden=eq.' + puestoActivo;
             const rFetch = await fetch(urlFetch, { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } });
             const dExistentes = await rFetch.json();
-            let idVerdadero = (dExistentes && dExistentes.length > 0) ? dExistentes.id : null;
+            let idVerdadero = (dExistentes && dExistentes.length > 0) ? dExistentes[0].id : null;
 
             if (idVerdadero) {
                 await fetch(SUPABASE_URL + '/rest/v1/catalogo_imagenes?id=eq.' + idVerdadero, {
@@ -253,21 +257,29 @@ async function subirImagenPuesto() {
             alert("¡Éxito! Imagen del catálogo tradicional modificada en vivo.");
         }
         
+        // Limpieza automática inmediata del formulario
         fileInput.value = "";
         if (txtNombre) txtNombre.value = "";
-        descargarYRenderizarImagenes(); 
-    } catch(e) { alert("Error al procesar subida: " + e.message); }
+        descargarYRenderizarImagenes(); // Gatilla el renderizado elástico mixto
+        
+    } catch(e) { 
+        console.error(e);
+        alert("Error al procesar subida: " + e.message); 
+    }
 }
 
 // =========================================================================
-// 5. RENDERIZADO DESDE LA API REST DE SUPABASE (CATÁLOGO FIJO ORIGINAL)
+// 5. RENDERIZADO MIXTO INTELIGENTE COMPATIBLE CON PUESTOS FIJOS Y BOTÓN ➕
 // =========================================================================
 async function descargarYRenderizarImagenes() {
     try {
-        const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=seccion_id,orden,ruta_imagen', {
+        const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=id,seccion_id,orden,ruta_imagen,nombre_sub_variante', {
             headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
         });
         const imagenesDB = await respuestaFetch.json();
+
+        // Limpiamos los elementos dinámicos extras anteriores del panel para evitar duplicados en la recarga
+        document.querySelectorAll('.item-variante-dinamica-admin').forEach(el => el.remove());
 
         if (imagenesDB && Array.isArray(imagenesDB)) {
             imagenesDB.forEach(function(item) {
@@ -284,12 +296,43 @@ async function descargarYRenderizarImagenes() {
                 if (item.seccion_id === "Seccion11") bloquePrefijo = "S11";
                 if (item.seccion_id === "Seccion12") bloquePrefijo = "S12";
 
-                const elementoImg = document.getElementById("img-" + bloquePrefijo + "-P" + item.orden);
-                if (elementoImg) {
-                    elementoImg.src = item.ruta_imagen + "?t=" + Date.now();
+                // Evaluamos los formatos guardados en internet de forma elástica
+                if (!isNaN(item.orden)) {
+                    // CAMINO A: Es un casillero fijo numérico tradicional de tu HTML (Puestos 1 al 6)
+                    const elementoImg = document.getElementById("img-" + bloquePrefijo + "-P" + item.orden);
+                    if (elementoImg) {
+                        elementoImg.src = item.ruta_imagen + "?t=" + Date.now();
+                        
+                        const elementoTexto = elementoImg.nextElementSibling;
+                        if (elementoTexto && elementoTexto.tagName === "SPAN" && item.nombre_sub_variante) {
+                            elementoTexto.textContent = item.nombre_sub_variante;
+                        }
+                    }
+                } else {
+                    // CAMINO B: Es una foto nueva inyectada desde tu botón más (➕)
+                    const elementoImgBase = document.getElementById("img-" + bloquePrefijo + "-P1");
+                    if (elementoImgBase) {
+                        const contenedorVarianteOculta = elementoImgBase.closest('.variante-oculta');
+                        const botonMas = contenedorVarianteOculta ? contenedorVarianteOculta.querySelector('[onclick*="seleccionarParaAgregarNuevaImagen"]') : null;
+                        
+                        if (contenedorVarianteOculta && botonMas) {
+                            // Fabricamos un nuevo cuadro miniatura idéntico para que veas la foto en tu administrador
+                            const nuevoCuadroExtra = document.createElement('div');
+                            nuevoCuadroExtra.className = 'item-variante item-variante-dinamica-admin';
+                            nuevoCuadroExtra.style.cursor = 'default';
+                            
+                            nuevoCuadroExtra.innerHTML = `
+                                <img src="${item.ruta_imagen}?t=${Date.now()}" style="width:100%; height:100%; object-fit:cover; border-radius:4px;" />
+                                ${item.nombre_sub_variante ? `<span style="display:block; font-size:11px; margin-top:4px; text-align:center;">${item.nombre_sub_variante}</span>` : '<span>Extra</span>'}
+                            `;
+                            
+                            // Lo posicionamos ordenadamente justo antes de tu botón de más ➕ en la pantalla
+                            contenedorVarianteOculta.insertBefore(nuevoCuadroExtra, botonMas);
+                        }
+                    }
                 }
             });
-            console.log("¡Las 12 secciones del catálogo administrativo se renderizaron con éxito!");
+            console.log("¡Catálogo administrativo renderizado en modo mixto simétrico!");
         }
     } catch (err) { console.error("Error cargando imágenes:", err); }
 }
@@ -317,7 +360,7 @@ function toggleSeccion(idContenedor) {
 async function subirCatalogoPDF() {
     const pdfInput = document.getElementById('nuevoPDF');
     if (!pdfInput.files.length) return alert("Por favor, selecciona un archivo PDF.");
-    const archivo = pdfInput.files; 
+    const archivo = pdfInput.files[0]; 
     const nombreUnico = Date.now() + "_" + archivo.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
     try {
         const { error: storageError } = await supabaseClient.storage.from('catalogos').upload("documentos/" + nombreUnico, archivo);
@@ -363,7 +406,7 @@ async function cargarCuadriculaVideosAdmin() {
 async function subirNuevoVideoAnuncio() {
     const videoInput = document.getElementById('inputVideoOculto');
     if (!videoInput || !videoInput.files.length) return;
-    const archivo = videoInput.files; 
+    const archivo = videoInput.files[0]; // CORREGIDO: Captura de archivo único individual
     const nombreUnico = Date.now() + "_" + archivo.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
     try {
         const { error: storageError } = await supabaseClient.storage.from('catalogos').upload("videos/" + nombreUnico, archivo);
@@ -397,7 +440,7 @@ async function guardarProductoModularCompleto() {
     try {
         let rutaPortadaFinal = null;
         if (portadaInput.files.length > 0) {
-            const filePortada = portadaInput.files; 
+            const filePortada = portadaInput.files[0]; // CORREGIDO: Captura del archivo físico
             const pathPortada = "modulares/portadas/" + Date.now() + "_" + filePortada.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
             const { error: errCover } = await supabaseClient.storage.from('catalogos').upload(pathPortada, filePortada);
             if (errCover) throw errCover;
@@ -417,7 +460,7 @@ async function guardarProductoModularCompleto() {
             const todosLosProds = await rFetch.json();
             if (todosLosProds && todosLosProds.length > 0) {
                 todosLosProds.sort((a, b) => b.id - a.id);
-                idSeguro = todosLosProds.id;
+                idSeguro = todosLosProds[0].id; // CORREGIDO: Extracción por posición indexada cero
             }
         }
 
@@ -436,6 +479,59 @@ async function guardarProductoModularCompleto() {
         resetearFormularioModular();
         listarModularesAdmin(); 
     } catch (err) { alert("Error: " + err.message); }
+}
+
+// =========================================================================
+// 10. FUNCIONES COMPLEMENTARIAS DE EDICIÓN, LISTADO Y RESETEO
+// =========================================================================
+async function prepararEdicionModular(id, titulo, descripcion) {
+    idProductoEdicion = id; 
+    document.getElementById('modTitulo').value = titulo;
+    document.getElementById('modDescripcion').value = descripcion;
+    const btn = document.querySelector("button[onclick='guardarProductoModularCompleto()']");
+    if (btn) { btn.textContent = "💾 Guardar Cambios"; btn.style.backgroundColor = "#2563eb"; }
+}
+
+function resetearFormularioModular() {
+    idProductoEdicion = null; 
+    document.getElementById('modTitulo').value = "";
+    document.getElementById('modDescripcion').value = "";
+    document.getElementById('modPortadaFile').value = "";
+    document.getElementById('modVariantesFiles').value = "";
+    const btn = document.querySelector("button[onclick='guardarProductoModularCompleto()']");
+    if (btn) { btn.textContent = "🚀 Publicar Producto"; btn.style.backgroundColor = "#1cbd5d"; }
+}
+
+async function listarModularesAdmin() {
+    const con = document.getElementById('cuadriculaModularesAdmin');
+    if (!con) return;
+    try {
+        const rFetch = await fetch(SUPABASE_URL + '/rest/v1/productos_modulares?select=id,titulo,descripcion,ruta_portada', { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } });
+        const data = await rFetch.json();
+        con.innerHTML = '';
+        if (data && Array.isArray(data)) {
+            data.forEach(p => {
+                const tEscapado = p.titulo.replace(/'/g, "\\'");
+                const dEscapada = (p.descripcion || '').replace(/'/g, "\\'").replace(/\n/g, "\\n");
+                con.innerHTML += `
+                    <div style="border:1px solid #cbd5e1; border-radius:6px; padding:10px; background:#fff; text-align:center;">
+                        <img src="${p.ruta_portada}?t=${Date.now()}" style="width:100%; height:100px; object-fit:cover;">
+                        <strong>${p.titulo}</strong>
+                        <div style="display:flex; gap:8px; margin-top:5px;">
+                            <button onclick="prepararEdicionModular('${p.id}', '${tEscapado}', '${dEscapada}')" style="background:#eab308; color:#fff; border:none; padding:4px; flex:1;">Editar</button>
+                            <button onclick="eliminarProductoModular('${p.id}')" style="background:#dc2626; color:#fff; border:none; padding:4px; flex:1;">Borrar</button>
+                        </div>
+                    </div>`;
+            });
+        }
+    } catch(e) { console.error(e); }
+}
+
+async function eliminarProductoModular(id) {
+    if (confirm("¿Estás seguro de eliminar este producto?")) {
+        await supabaseClient.from('productos_modulares').eq('id', id).delete();
+        listarModularesAdmin();
+    }
 }
 
 // =========================================================================
@@ -499,7 +595,7 @@ async function eliminarProductoModular(id) {
     }
 }
 
-// Vinculaciones obligatorias en el árbol global window al puro fondo
+// Vinculaciones obligatorias en el árbol global window al puro fondo del archivo
 window.entrarAdmin = entrarAdmin;
 window.toggleSeccion = toggleSeccion;
 window.seleccionarPosicion = seleccionarPosicion;
@@ -515,6 +611,7 @@ window.prepararEdicionModular = prepararEdicionModular;
 window.resetearFormularioModular = resetearFormularioModular;
 window.listarModularesAdmin = listarModularesAdmin;
 window.eliminarProductoModular = eliminarProductoModular;
+
 
 
 
