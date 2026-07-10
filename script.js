@@ -1,4 +1,59 @@
 // =========================================================================
+// ESCUDO PROACTIVO: BLOQUEO DE INTERFAZ Y CONGELAMIENTO DE CONSOLA
+// =========================================================================
+(function() {
+    // 1. Desactivar clic derecho (Bloquea la opción "Inspeccionar")
+    document.addEventListener('contextmenu', function(evento) {
+        evento.preventDefault();
+    });
+
+    // 2. Interceptar y bloquear atajos de teclado de desarrollo
+    document.addEventListener('keydown', function(evento) {
+        // Bloquear F12
+        if (evento.keyCode === 123) {
+            evento.preventDefault();
+            return false;
+        }
+        // Bloquear Ctrl + Shift + I (Inspector)
+        if (evento.ctrlKey && evento.shiftKey && evento.keyCode === 73) {
+            evento.preventDefault();
+            return false;
+        }
+        // Bloquear Ctrl + Shift + J (Consola)
+        if (evento.ctrlKey && evento.shiftKey && evento.keyCode === 74) {
+            evento.preventDefault();
+            return false;
+        }
+        // Bloquear Ctrl + U (Ver Código Fuente)
+        if (evento.ctrlKey && evento.keyCode === 85) {
+            evento.preventDefault();
+            return false;
+        }
+    });
+
+    // 3. Contramedida: Congelar la pestaña con un bucle infinito de Debugger
+    function activarTrampaConsola() {
+        function congelar() {
+            setInterval(function() {
+                debugger; // Rompe el hilo de ejecución del navegador del intruso
+            }, 20);
+        }
+        try {
+            var objetoDetector = new Image();
+            Object.defineProperty(objetoDetector, 'id', {
+                get: function() {
+                    congelar();
+                }
+            });
+            console.log(objetoDetector);
+        } catch (error) {}
+    }
+
+    // Ejecución cíclica constante en segundo plano cada segundo
+    setInterval(activarTrampaConsola, 1000);
+})();
+// =========================================================================
+// =========================================================================
 // 1. CONFIGURACIÓN Y CONEXIÓN CON SUPABASE (ENTORNO SEGURO)
 // =========================================================================
 const ADMIN_PASSWORD = "Maderas_Habitarq_2026";
