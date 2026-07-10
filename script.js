@@ -5,6 +5,7 @@ const ADMIN_PASSWORD = "Maderas_Habitarq_2026";
 const SUPABASE_URL = "https://mpjwdgekznvukmpprlat.supabase.co"; 
 const SUPABASE_ANON_KEY = "sb_publishable_lnwuBk9887iZy76uvAxeIQ_8StvDZ8K";
 
+
 // Mini-librería con aislamiento nativo estable contra errores CORS
 (function(global) {
     function SupabaseClient(urlProyecto, keyProyecto) {
