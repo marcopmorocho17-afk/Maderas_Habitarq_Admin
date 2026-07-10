@@ -164,18 +164,52 @@ function seleccionarPosicion(seccionId, puesto, nombreProducto) {
     btn.style.cursor = "pointer";
 }
 
+// Variable global para controlar si el clic vino desde el botón de añadir (+)
+let esNuevaInsercionAcumulativa = false;
+
+function seleccionarParaAgregarNuevaImagen(seccionId, nombreProducto) {
+    seccionActiva = seccionId;
+    // Generamos un identificador dinámico único basado en el tiempo para que Supabase lo tome como foto nueva
+    puestoActivo = "Puesto_Extra_" + Date.now(); 
+    esNuevaInsercionAcumulativa = true;
+
+    // Quitamos la selección visual de cualquier otro cuadradito antiguo de tu HTML
+    document.querySelectorAll('.item-variante').forEach(function(el) {
+        el.style.borderColor = ""; 
+        el.style.background = "";
+    });
+
+    // Marcamos visualmente el botón de más (+) que acabas de presionar
+    if (event && event.currentTarget) {
+        event.currentTarget.style.setProperty('border', '2px solid #1cbd5d', 'important');
+        event.currentTarget.style.setProperty('background', '#f0fdf4', 'important');
+    }
+
+    // Actualizamos el letrero indicador del panel
+    const indicador = document.getElementById('indicadorSeleccion');
+    if (indicador) {
+        indicador.innerHTML = "➕ Añadiendo foto nueva a la galería de: <strong>" + nombreProducto + "</strong>";
+    }
+
+    // Encendemos el botón verde de subir
+    const btn = document.getElementById('btnSubir');
+    if (btn) {
+        btn.disabled = false;
+        btn.style.backgroundColor = "#1cbd5d";
+        btn.style.cursor = "pointer";
+    }
+}
 // =========================================================================
-// 4. SUBIDA POR COORDENADAS CON NOMBRE PLANO ACUMULATIVO (INSERCION PURA)
+// 4. SUBIDA POR COORDENADAS: MOTOR INTELIGENTE DUAL (EDITA EXISTENTES O AÑADE CON ➕)
 // =========================================================================
 async function subirImagenPuesto() {
     const fileInput = document.getElementById('nuevaImagen');
     const txtNombre = document.getElementById('subVarianteNombre');
     
     if (!fileInput || !fileInput.files.length) return alert("Selecciona una imagen antes de continuar.");
-    if (!seccionActiva || !puestoActivo) return alert("Por favor, haz clic primero sobre una madera de la lista superior.");
+    if (!seccionActiva || !puestoActivo) return alert("Por favor, selecciona una miniatura o presiona el botón ➕.");
 
     const nombreVariante = txtNombre ? txtNombre.value.trim() : "";
-    
     const file = fileInput.files[0]; // Captura física del archivo individual
     const path = "posiciones/sub_variantes/" + Date.now() + "_" + file.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
     
@@ -186,30 +220,66 @@ async function subirImagenPuesto() {
         
         const { data: urlData } = supabaseClient.storage.from('catalogos').getPublicUrl(path);
         
-        // B. INSERCIÓN DIRECTA PURA (SOLO AGREGA): No busca IDs previos, solo inyecta una nueva fila elástica
-        const { error: errInsert } = await supabaseClient
-            .from('catalogo_imagenes')
-            .insert([{
-                seccion_id: seccionActiva,
-                orden: puestoActivo + "_" + Date.now(), // ID dinámico único para fotos infinitas en la misma sección
-                ruta_imagen: urlData.publicUrl,
-                nombre_sub_variante: nombreVariante,  
-                caracteristicas_tecnicas: "" // Limpio y sin cajas complejas de medidas
-            }]);
+        // B. EVALUACIÓN DE CAMINO: ¿Viene del botón más (+) o es una edición de miniatura fija?
+        if (esNuevaInsercionAcumulativa) {
+            // MODO CAMINO ➕ (SOLO AGREGA): Inserta una fila elástica totalmente nueva en internet
+            const { error: errInsert } = await supabaseClient
+                .from('catalogo_imagenes')
+                .insert([{
+                    seccion_id: seccionActiva,
+                    orden: puestoActivo, // Guarda la firma temporal única para que no pise nada anterior
+                    ruta_imagen: urlData.publicUrl,
+                    nombre_sub_variante: nombreVariante,  
+                    caracteristicas_tecnicas: "" 
+                }]);
 
-        if (errInsert) throw errInsert;
+            if (errInsert) throw errInsert;
+            alert("¡Éxito! Nueva imagen añadida correctamente a la galería con el nombre: " + nombreVariante);
+        } else {
+            // MODO EDICIÓN (REEMPLAZAR): Si hiciste clic en un cuadradito normal de tus maderas
+            const urlFetch = SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=id&seccion_id=eq.' + encodeURIComponent(seccionActiva) + '&orden=eq.' + puestoActivo;
+            const respuestaFetch = await fetch(urlFetch, {
+                headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+            });
+            const datosExistentes = await respuestaFetch.json();
+            
+            let idVerdadero = null;
+            if (datosExistentes && Array.isArray(datosExistentes) && datosExistentes.length > 0) {
+                idVerdadero = datosExistentes[0].id; 
+            }
+
+            if (idVerdadero) {
+                // Reemplaza la foto existente en ese casillero fijo
+                const urlUpdate = SUPABASE_URL + '/rest/v1/catalogo_imagenes?id=eq.' + idVerdadero;
+                await fetch(urlUpdate, {
+                    method: 'PATCH',
+                    headers: { 
+                        'apikey': SUPABASE_ANON_KEY, 
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ruta_imagen: urlData.publicUrl, nombre_sub_variante: nombreVariante })
+                });
+                alert("¡Éxito! Imagen del catálogo tradicional modificada en vivo.");
+            } else {
+                // Si el casillero tradicional estaba vacío por primera vez
+                await supabaseClient
+                    .from('catalogo_imagenes')
+                    .insert([{ seccion_id: seccionActiva, orden: puestoActivo, ruta_imagen: urlData.publicUrl, nombre_sub_variante: nombreVariante }]);
+                alert("¡Éxito! Imagen guardada en el casillero tradicional.");
+            }
+        }
         
-        alert("¡Éxito! Nueva imagen guardada correctamente con el nombre: " + nombreVariante);
-        
-        // Limpieza rápida automática del cuadro para la siguiente foto
+        // Limpieza y restauración completa del estado
         fileInput.value = "";
         if (txtNombre) txtNombre.value = "";
+        esNuevaInsercionAcumulativa = false; // Reseteamos el interruptor
         
-        descargarYRenderizarImagenes(); // Refresca tus miniaturas internas del panel
+        descargarYRenderizarImagenes(); // Refresca las miniaturas internas del panel
         
     } catch(e) { 
-        console.error("Error al guardar sub-variante fija:", e);
-        alert("No se pudo guardar: " + (e.message || e)); 
+        console.error("Error en el procesador dual del admin:", e);
+        alert("No se pudo procesar la acción: " + (e.message || e)); 
     }
 }
 // =========================================================================
