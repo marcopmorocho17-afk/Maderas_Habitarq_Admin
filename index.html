@@ -199,7 +199,7 @@
     <main id="mainPublico" class="seccion-publica" hidden>
 
         <!-- SECCIÓN 1: DUELAS -->
-        <div class="bloque-categoria">
+               <div class="bloque-categoria">
             <button onclick="toggleSeccion('desplegableDuelas')" class="btn-desplegable">
                 Duelas ▾
             </button>
@@ -212,37 +212,39 @@
                         </div>
                         <div class="variante-oculta">
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion1', 1, 'Duela panelada')">
-                                <img id="img-S1-P1" src="otros/D2.png" alt="Duela panelada" /><span>Duela
-                                    panelada</span>
+                                <img id="img-S1-P1" src="otros/D2.png" alt="Duela panelada" /><span>Duela panelada</span>
                             </div>
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion1', 2, 'Duela de chonta')">
-                                <img id="img-S1-P2" src="otros/DC.png" alt="Duela de chonta" /><span>Duela de
-                                    chonta</span>
+                                <img id="img-S1-P2" src="otros/DC.png" alt="Duela de chonta" /><span>Duela de chonta</span>
                             </div>
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion1', 3, 'Duelas biseladas')">
-                                <img id="img-S1-P3" src="otros/DB.png" alt="Duelas biseladas" /><span>Duelas
-                                    biseladas</span>
+                                <img id="img-S1-P3" src="otros/DB.png" alt="Duelas biseladas" /><span>Duelas biseladas</span>
                             </div>
                             <div class="item-variante" onclick="seleccionarPosicion('Seccion1', 4, 'Duela de pino')">
-                                <img id="img-S1-P4" src="otros/DP1.png" alt="Duela de pinos" /><span>Duela de
-                                    pino</span>
+                                <img id="img-S1-P4" src="otros/DP1.png" alt="Duela de pinos" /><span>Duela de pino</span>
                             </div>
-                            <div class="item-variante"
-                                onclick="seleccionarPosicion('Seccion1', 5, 'Duela de eucalipto 2 X 1')">
-                                <img id="img-S1-P5" src="otros/DP2.png" alt="Duela de eucalipto 2 X 1" /><span>Duela
-                                    de eucalipto 2 X 1</span>
+                            <div class="item-variante" onclick="seleccionarPosicion('Seccion1', 5, 'Duela de eucalipto 2 X 1')">
+                                <img id="img-S1-P5" src="otros/DP2.png" alt="Duela de eucalipto 2 X 1" /><span>Duela de eucalipto 2 X 1</span>
                             </div>
-                            <div class="item-variante"
-                                onclick="seleccionarPosicion('Seccion1', 6, 'Duelas para tendido de camas')">
-                                <img id="img-S1-P6" src="otros/DTC.png"
-                                    alt="Duelas para tendido de camas" /><span>Duelas para tendido de camas</span>
+                            <div class="item-variante" onclick="seleccionarPosicion('Seccion1', 6, 'Duelas para tendido de camas')">
+                                <img id="img-S1-P6" src="otros/DTC.png" alt="Duelas para tendido de camas" /><span>Duelas para tendido de camas</span>
                             </div>
+
+                            <!-- =========================================================================
+                                 BOTÓN INTERACTIVO ELÁSTICO: INSERCIÓN ➕ SIN AFECTAR LAS PORTADAS
+                                 ========================================================================= -->
+                            <!-- Este cuadro se mimetiza con tus estilos CSS y dispara la función acumulativa infinita -->
+                            <div class="item-variante" onclick="seleccionarParaAgregarNuevaImagen('Seccion1', 'Duelas')" 
+                                 style="border: 2px dashed #a8a29e !important; background: #fafaf9 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; min-height: 120px;">
+                                <span style="font-size: 32px; color: #78716c; font-weight: bold; line-height: 1;">➕</span>
+                                <span style="font-size: 11px; color: #78716c; font-weight: bold; margin-top: 5px; text-transform: uppercase;">Añadir Foto</span>
+                            </div>
+
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
         <!-- SECCIÓN 2: RASTRERAS -->
         <div class="bloque-categoria" style="margin-top: 30px;">
             <button onclick="toggleSeccion('desplegableRastreras')" class="btn-desplegable">
