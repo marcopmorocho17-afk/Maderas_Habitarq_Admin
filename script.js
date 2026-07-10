@@ -165,65 +165,56 @@ function seleccionarPosicion(seccionId, puesto, nombreProducto) {
 }
 
 // =========================================================================
-// 4. SUBIDA POR COORDENADAS DE SELECCIÓN POR CLIC (CATÁLOGO FIJO - REPARADA)
+// 4. SUBIDA POR COORDENADAS CON CARACTERÍSTICAS ILIMITADAS (FIJOS REPARADOS)
 // =========================================================================
 async function subirImagenPuesto() {
     const fileInput = document.getElementById('nuevaImagen');
-    if (!fileInput || !fileInput.files.length) return alert("Selecciona una imagen antes de continuar.");
+    const txtNombre = document.getElementById('subVarianteNombre');
+    const txtDetalle = document.getElementById('subVarianteDetalle');
     
-    // CORRECCIÓN CLAVE: Agregamos [0] para capturar estrictamente el archivo físico individual seleccionado
-    const file = fileInput.files[0]; 
-    const path = "posiciones/" + Date.now() + "_" + file.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
+    if (!fileInput || !fileInput.files.length) return alert("Selecciona una imagen antes de continuar.");
+    if (!seccionActiva || !puestoActivo) return alert("Por favor, haz clic primero sobre una madera y un puesto para activarlos.");
+
+    const nombreVariante = txtNombre ? txtNombre.value.trim() : "";
+    const detalleVariante = txtDetalle ? txtDetalle.value.trim() : "";
+    
+    const file = fileInput.files[0]; // Captura física del archivo individual
+    const path = "posiciones/sub_variantes/" + Date.now() + "_" + file.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
     
     try {
         // A. Subida física del archivo al Storage de Supabase
-        const { error } = await supabaseClient.storage.from('catalogos').upload(path, file);
-        if (error) throw error;
+        const { error: errUpload } = await supabaseClient.storage.from('catalogos').upload(path, file);
+        if (errUpload) throw errUpload;
         
-        const { data } = supabaseClient.storage.from('catalogos').getPublicUrl(path);
+        const { data: urlData } = supabaseClient.storage.from('catalogos').getPublicUrl(path);
         
-        // B. CONSULTA DIRECTA REST BLINDADA: Evitamos maybeSingle() para capturar el ID de forma segura
-        const urlFetch = SUPABASE_URL + '/rest/v1/catalogo_imagenes?select=id&seccion_id=eq.' + encodeURIComponent(seccionActiva) + '&orden=eq.' + puestoActivo;
-        const respuestaFetch = await fetch(urlFetch, {
-            headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
-        });
-        const datosExistentes = await respuestaFetch.json();
-        
-        let idVerdadero = null;
-        if (datosExistentes && Array.isArray(datosExistentes) && datosExistentes.length > 0) {
-            idVerdadero = datosExistentes[0].id; // CORREGIDO: Se extrae el ID de la primera posición del array JSON
-        }
+        // B. INSERCIÓN ELÁSTICA: Registramos la sub-variante con sus propios textos independientes
+        const { error: errInsert } = await supabaseClient
+            .from('catalogo_imagenes')
+            .insert([{
+                seccion_id: seccionActiva,
+                orden: puestoActivo + "_" + Date.now(), // ID dinámico único para fotos infinitas en la misma sección
+                ruta_imagen: urlData.publicUrl,
+                nombre_sub_variante: nombreVariante,  
+                caracteristicas_tecnicas: detalleVariante 
+            }]);
 
-        if (idVerdadero) {
-            // MODO ACTUALIZACIÓN (UPDATE): Pasamos el ID real extraído limpiamente con un fetch PATCH directo
-            const urlUpdate = SUPABASE_URL + '/rest/v1/catalogo_imagenes?id=eq.' + idVerdadero;
-            await fetch(urlUpdate, {
-                method: 'PATCH',
-                headers: { 
-                    'apikey': SUPABASE_ANON_KEY, 
-                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ ruta_imagen: data.publicUrl })
-            });
-        } else {
-            // MODO CREACIÓN (INSERT): Si el puesto estaba completamente vacío
-            await supabaseClient
-                .from('catalogo_imagenes')
-                .insert([{ seccion_id: seccionActiva, orden: puestoActivo, ruta_imagen: data.publicUrl }]);
-        }
+        if (errInsert) throw errInsert;
         
-        alert("¡Éxito! Imagen del catálogo tradicional actualizada en vivo.");
-        fileInput.value = ""; 
-        descargarYRenderizarImagenes(); // Refresca las miniaturas del panel de control
+        alert("¡Éxito! Nueva característica agregada correctamente a esta variante.");
+        
+        // Limpieza automática del sub-formulario
+        fileInput.value = "";
+        if (txtNombre) txtNombre.value = "";
+        if (txtDetalle) txtDetalle.value = "";
+        
+        descargarYRenderizarImagenes(); 
         
     } catch(e) { 
-        console.error("Error en subida de puesto fijo:", e);
-        alert("No se pudo actualizar: " + (e.message || e)); 
+        console.error("Error al guardar sub-variante fija:", e);
+        alert("No se pudo guardar: " + (e.message || e)); 
     }
 }
-
-
 // =========================================================================
 // 5. RENDERIZADO DESDE LA API REST DE SUPABASE (CATÁLOGO FIJO S1-S12)
 // =========================================================================
