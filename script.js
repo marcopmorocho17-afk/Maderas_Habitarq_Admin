@@ -229,7 +229,7 @@ async function subirImagenPuesto() {
     }
 }
 // =========================================================================
-// 5. RENDERIZADO DESDE LA API REST DE SUPABASE (CATÁLOGO FIJO ORIGINAL)
+// 5. RENDERIZADO DESDE LA API REST DE SUPABASE (CATÁLOGO FIJO ORIGINAL LIMPIO)
 // =========================================================================
 async function descargarYRenderizarImagenes() {
     try {
@@ -265,7 +265,6 @@ async function descargarYRenderizarImagenes() {
         console.error("Error cargando imágenes:", err);
     }
 }
-
 // =========================================================================
 // 6. CONTROL INTERACTIVO DE MÚLTIPLES DESPLEGABLES (DINÁMICO)
 // =========================================================================
