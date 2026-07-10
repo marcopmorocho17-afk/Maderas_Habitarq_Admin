@@ -238,29 +238,17 @@ async function descargarYRenderizarImagenes() {
         });
         const imagenesDB = await respuestaFetch.json();
 
-        // 1. PASO DE RESPALDO: Ponemos las fotos locales por defecto por si la base de datos está vacía
-        // Esto evita que se vean los íconos de imágenes rotas que me mostraste
-        const rutasLocalesMapeo = {
-            "img-S1-P1": "otros/D2.png",
-            "img-S1-P2": "otros/DC.png",
-            "img-S1-P3": "otros/DB.png",
-            "img-S1-P4": "otros/DP1.png",
-            "img-S1-P5": "otros/DP2.png",
-            "img-S1-P6": "otros/DTC.png"
-        };
-
-        // Reseteamos el estado visual inicial con las maderas locales base
-        for (let idImg in rutasLocalesMapeo) {
-            const elementoImg = document.getElementById(idImg);
-            if (elementoImg) {
-                elementoImg.src = rutasLocalesMapeo[idImg]; // Carga la foto local predeterminada
-            }
-        }
-
-        // Removemos botones de eliminar viejos para no duplicarlos en la interfaz
+        // 1. BLINDAJE ABSOLUTO ANTI-ROTURAS: Limpiamos los contenedores visuales viejos
+        // Si la base de datos está vacía, ocultamos temporalmente el cuadro de imagen rota de Edge
+        document.querySelectorAll('.item-variante img').forEach(img => {
+            img.style.display = "none"; // Esconde el recuadro roto feo de la pantalla
+            img.src = ""; 
+        });
+        
+        // Removemos botones de eliminar anteriores para evitar duplicados en la cuadrícula
         document.querySelectorAll('.btn-eliminar-foto-fija').forEach(btn => btn.remove());
 
-        // 2. CORRECCIÓN DEL BOTÓN ➕: Buscamos el botón de añadir y nos aseguramos de que mantenga su diseño
+        // 2. RECONSTRUCCIÓN AUTOMÁTICA DEL BOTÓN ➕
         const botonMasElemento = document.querySelector('.item-variante-mas, [onclick*="seleccionarParaAgregarNuevaImagen"]');
         if (botonMasElemento) {
             botonMasElemento.innerHTML = `
@@ -269,7 +257,7 @@ async function descargarYRenderizarImagenes() {
             `;
         }
 
-        // 3. CAPA DE INTERNET: Si hay datos guardados en Supabase, reemplazamos las fotos locales por las de la nube
+        // 3. SECCIÓN DE INYECCIÓN DESDE LA NUBE (SUPABASE)
         if (imagenesDB && Array.isArray(imagenesDB) && imagenesDB.length > 0) {
             imagenesDB.forEach(function(item) {
                 let bloquePrefijo = "S1"; 
@@ -285,17 +273,20 @@ async function descargarYRenderizarImagenes() {
                 if (item.seccion_id === "Seccion11") bloquePrefijo = "S11";
                 if (item.seccion_id === "Seccion12") bloquePrefijo = "S12";
 
+                // Buscamos el nodo de imagen correspondiente en tu HTML
                 const elementoImg = document.getElementById("img-" + bloquePrefijo + "-P" + item.orden);
                 
                 if (elementoImg) {
-                    elementoImg.src = item.ruta_imagen + "?t=" + Date.now();
+                    elementoImg.style.display = "block"; // Encendemos la imagen porque ya tiene datos de internet
+                    elementoImg.src = item.ruta_imagen + "?t=" + Date.now(); // Parámetro anti-caché
                     
+                    // Sincronizamos el nombre plano en su respectivo span de abajo si existe
                     const elementoTexto = elementoImg.nextElementSibling;
                     if (elementoTexto && elementoTexto.tagName === "SPAN" && item.nombre_sub_variante) {
                         elementoTexto.textContent = item.nombre_sub_variante;
                     }
 
-                    // INYECCIÓN DE LA ❌ FLOTANTE DE ELIMINACIÓN
+                    // INYECCIÓN DE LA ❌ FLOTANTE DE ELIMINACIÓN REAL
                     const cajaPadre = elementoImg.parentElement;
                     if (cajaPadre) {
                         cajaPadre.style.position = "relative";
@@ -306,7 +297,7 @@ async function descargarYRenderizarImagenes() {
                         botonEliminar.style.cssText = "position: absolute; top: 4px; right: 4px; background: #dc2626; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;";
                         
                         botonEliminar.onclick = function(evento) {
-                            evento.stopPropagation(); // Evita que se confunda con la selección de la tarjeta
+                            evento.stopPropagation(); // Detiene el clic para que no se confunda con la selección de la tarjeta
                             eliminarFotoTradicionalPorId(item.id);
                         };
 
@@ -320,6 +311,7 @@ async function descargarYRenderizarImagenes() {
         console.error("Error cargando imágenes de control:", err);
     }
 }
+
 // =========================================================================
 // 6. CONTROL INTERACTIVO DE MÚLTIPLES DESPLEGABLES (DINÁMICO)
 // =========================================================================
