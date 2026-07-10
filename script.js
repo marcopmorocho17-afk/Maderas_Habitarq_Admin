@@ -165,18 +165,16 @@ function seleccionarPosicion(seccionId, puesto, nombreProducto) {
 }
 
 // =========================================================================
-// 4. SUBIDA POR COORDENADAS CON CARACTERÍSTICAS ILIMITADAS (FIJOS REPARADOS)
+// 4. SUBIDA POR COORDENADAS CON NOMBRE PLANO ACUMULATIVO (INSERCION PURA)
 // =========================================================================
 async function subirImagenPuesto() {
     const fileInput = document.getElementById('nuevaImagen');
     const txtNombre = document.getElementById('subVarianteNombre');
-    const txtDetalle = document.getElementById('subVarianteDetalle');
     
     if (!fileInput || !fileInput.files.length) return alert("Selecciona una imagen antes de continuar.");
-    if (!seccionActiva || !puestoActivo) return alert("Por favor, haz clic primero sobre una madera y un puesto para activarlos.");
+    if (!seccionActiva || !puestoActivo) return alert("Por favor, haz clic primero sobre una madera de la lista superior.");
 
     const nombreVariante = txtNombre ? txtNombre.value.trim() : "";
-    const detalleVariante = txtDetalle ? txtDetalle.value.trim() : "";
     
     const file = fileInput.files[0]; // Captura física del archivo individual
     const path = "posiciones/sub_variantes/" + Date.now() + "_" + file.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
@@ -188,7 +186,7 @@ async function subirImagenPuesto() {
         
         const { data: urlData } = supabaseClient.storage.from('catalogos').getPublicUrl(path);
         
-        // B. INSERCIÓN ELÁSTICA: Registramos la sub-variante con sus propios textos independientes
+        // B. INSERCIÓN DIRECTA PURA (SOLO AGREGA): No busca IDs previos, solo inyecta una nueva fila elástica
         const { error: errInsert } = await supabaseClient
             .from('catalogo_imagenes')
             .insert([{
@@ -196,19 +194,18 @@ async function subirImagenPuesto() {
                 orden: puestoActivo + "_" + Date.now(), // ID dinámico único para fotos infinitas en la misma sección
                 ruta_imagen: urlData.publicUrl,
                 nombre_sub_variante: nombreVariante,  
-                caracteristicas_tecnicas: detalleVariante 
+                caracteristicas_tecnicas: "" // Limpio y sin cajas complejas de medidas
             }]);
 
         if (errInsert) throw errInsert;
         
-        alert("¡Éxito! Nueva característica agregada correctamente a esta variante.");
+        alert("¡Éxito! Nueva imagen guardada correctamente con el nombre: " + nombreVariante);
         
-        // Limpieza automática del sub-formulario
+        // Limpieza rápida automática del cuadro para la siguiente foto
         fileInput.value = "";
         if (txtNombre) txtNombre.value = "";
-        if (txtDetalle) txtDetalle.value = "";
         
-        descargarYRenderizarImagenes(); 
+        descargarYRenderizarImagenes(); // Refresca tus miniaturas internas del panel
         
     } catch(e) { 
         console.error("Error al guardar sub-variante fija:", e);
