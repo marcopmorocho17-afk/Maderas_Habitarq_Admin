@@ -400,8 +400,9 @@ async function guardarProductoModularCompleto() {
     try {
         let rutaPortadaFinal = null;
 
+        // A. Subir imagen de portada principal si se seleccionó un archivo
         if (portadaInput.files.length > 0) {
-            const filePortada = portadaInput.files[0]; 
+            const filePortada = portadaInput.files[0]; // Captura limpia del archivo individual
             const pathPortada = "modulares/portadas/" + Date.now() + "_" + filePortada.name.normalize('NFKD').replace(/[^\w.\-]/g, '_');
             const { error: errCover } = await supabaseClient.storage.from('catalogos').upload(pathPortada, filePortada);
             if (errCover) throw errCover;
@@ -412,12 +413,14 @@ async function guardarProductoModularCompleto() {
         let idSeguro = idProductoEdicion;
 
         if (idProductoEdicion) {
+            // MODO EDICIÓN: Actualizamos el registro existente
             const datosUpdate = { titulo: titulo, descripcion: descripcion };
             if (rutaPortadaFinal) datosUpdate.ruta_portada = rutaPortadaFinal;
 
             const { error: errUpdate } = await supabaseClient.from('productos_modulares').eq('id', idProductoEdicion).update(datosUpdate);
             if (errUpdate) throw errUpdate;
         } else {
+            // MODO CREACIÓN: Insertamos el registro de texto
             if (!rutaPortadaFinal) return alert("La imagen de portada es obligatoria para un producto nuevo.");
             
             const { error: errInsertMaster } = await supabaseClient.from('productos_modulares').insert([{
@@ -427,23 +430,26 @@ async function guardarProductoModularCompleto() {
             }]);
             if (errInsertMaster) throw errInsertMaster;
 
-            // RE-FETCH GARANTIZADO: Jalamos la lista de IDs para buscar el registro de forma manual en JavaScript
-            const { data: todosLosProds, error: errFetch } = await supabaseClient
-                .from('productos_modulares')
-                .select('id');
-                
-            if (errFetch) throw errFetch;
+            // MÉTODO DE RESCATE BLINDADO: Consultamos el listado plano de IDs de la tabla rest/v1
+            const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/productos_modulares?select=id', {
+                headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+            });
+            
+            const todosLosProds = await respuestaFetch.json();
             
             if (todosLosProds && Array.isArray(todosLosProds) && todosLosProds.length > 0) {
-                // Ordenamos por ID numérico en caliente de mayor a menor
+                // Ordenamos numéricamente de mayor a menor para capturar el último ID autogenerado
                 todosLosProds.sort(function(a, b) { return b.id - a.id; });
-                // CORREGIDO DEFINITIVAMENTE: Se extrae el ID de la primera posición del array ordenado
+                
+                // CORRECCIÓN CLAVE: Se añade el índice [0] para sacar el número entero de la primera posición
                 idSeguro = todosLosProds[0].id; 
             }
         }
 
+        // Validación final de amarre relacional
         if (!idSeguro) throw new Error("No se pudo obtener el identificador relacional del producto desde el servidor.");
 
+        // B. Subir imágenes secundarias de variantes adicionales en bucle asíncrono
         if (variantesInput.files.length > 0) {
             for (let i = 0; i < variantesInput.files.length; i++) {
                 const fileVar = variantesInput.files[i];
@@ -463,7 +469,7 @@ async function guardarProductoModularCompleto() {
 
         alert(idProductoEdicion ? "¡Producto editado correctamente!" : "¡Producto modular publicado con éxito con todas sus variantes!");
         resetearFormularioModular();
-        listarModularesAdmin(); 
+        listarModularesAdmin(); // Dibuja la tarjeta abajo de inmediato
 
     } catch (err) {
         console.error(err);
@@ -471,78 +477,6 @@ async function guardarProductoModularCompleto() {
     }
 }
 
-async function prepararEdicionModular(id, titulo, descripcion) {
-    idProductoEdicion = id; 
-    
-    document.getElementById('modTitulo').value = titulo;
-    document.getElementById('modDescripcion').value = descripcion;
-    
-    const btn = document.querySelector("button[onclick='guardarProductoModularCompleto()']");
-    if (btn) {
-        btn.textContent = "💾 Guardar Cambios del Bloque";
-        btn.style.backgroundColor = "#2563eb"; 
-    }
-    
-    document.getElementById('modTitulo').scrollIntoView({ behavior: 'smooth' });
-}
-
-function resetearFormularioModular() {
-    idProductoEdicion = null; 
-    document.getElementById('modTitulo').value = "";
-    document.getElementById('modDescripcion').value = "";
-    document.getElementById('modPortadaFile').value = "";
-    document.getElementById('modVariantesFiles').value = "";
-    
-    const btn = document.querySelector("button[onclick='guardarProductoModularCompleto()']");
-    if (btn) {
-        btn.textContent = "🚀 Publicar Producto Sin Usar Código";
-        btn.style.backgroundColor = "#1cbd5d"; 
-    }
-}
-
-async function listarModularesAdmin() {
-    const con = document.getElementById('cuadriculaModularesAdmin');
-    if (!con) return;
-    try {
-        const respuestaFetch = await fetch(SUPABASE_URL + '/rest/v1/productos_modulares?select=id,titulo,descripcion,ruta_portada', {
-            headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
-        });
-        const data = await respuestaFetch.json();
-        
-        con.innerHTML = '';
-        if (data && Array.isArray(data)) {
-            data.forEach(p => {
-                const tituloEscapado = p.titulo.replace(/'/g, "\\'");
-                const descEscapada = (p.descripcion || '').replace(/'/g, "\\'").replace(/\n/g, "\\n");
-
-                // SE AGREGA ?t= AL RENDERIZADO DEL ADMIN CONTRA LA CACHÉ ATASCADA
-                con.innerHTML += `
-                    <div style="border:1px solid #cbd5e1; border-radius:6px; padding:10px; background:#fff; text-align:center; display:flex; flex-direction:column; justify-content:space-between; min-height:200px;">
-                        <div>
-                            <img src="${p.ruta_portada}?t=${Date.now()}" style="width:100%; height:100px; object-fit:cover; border-radius:4px;">
-                            <strong style="font-size:12px; display:block; margin:5px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.titulo}</strong>
-                        </div>
-                        <div style="display:flex; gap:8px; margin-top:5px;">
-                            <button onclick="prepararEdicionModular('${p.id}', '${tituloEscapado}', '${descEscapada}')" style="background:#eab308; color:#fff; border:none; padding:6px; border-radius:4px; font-size:11px; flex:1; cursor:pointer; font-weight:bold;">Editar</button>
-                            <button onclick="eliminarProductoModular('${p.id}')" style="background:#dc2626; color:#fff; border:none; padding:6px; border-radius:4px; font-size:11px; flex:1; cursor:pointer; font-weight:bold;">Eliminar</button>
-                        </div>
-                    </div>`;
-            });
-        }
-    } catch(e) { console.error(e); }
-}
-
-async function eliminarProductoModular(id) {
-    if (confirm("¿Estás seguro de eliminar este producto modular? Se borrarán de inmediato todas sus variantes internas del modal de forma automática.")) {
-        try {
-            const { error } = await supabaseClient.from('productos_modulares').eq('id', id).delete();
-            if (error) throw error;
-            alert("Producto modular eliminado correctamente.");
-            if (idProductoEdicion === id) resetearFormularioModular();
-            listarModularesAdmin();
-        } catch(e) { alert(e.message); }
-    }
-}
 
 // Vinculaciones globales requeridas al final absoluto del archivo
 window.toggleSeccion = toggleSeccion;
